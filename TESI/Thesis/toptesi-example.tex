@@ -97,7 +97,7 @@
 \markboth{\MakeUppercase{Introduction}}{}
 \addcontentsline{toc}{chapter}{Introduction}
 Every work which seeks to speak about interest rates term structure cannot avoid to begin from 2007 liquidity and credit crisis. Before that harmful year every market participants considered the credit risk on short time frame, for example less then one year, irrelevant and this opinion was reflected by the market in infinitesimal basis spread between different tenor rates. In other words, all banks in the system consider almost the same lend money to other banks for a year, for a month or for a day and this was possible because a big financial institution's default probability was seen as negligible. Otherwise it wasn't, as the Lehman Brothers case teach to the world. The panic in the markets during summer 2007 drives first to a crisis of confidence between the so called "Too big to fail" \footnote{This title was created during subprime crisis to speak about financial institutions that, as the nickname suggest, are so big that their default might means the overall system collapse} that, unable to estimate other institutions creditworthiness, can't no more trust each other and this leads to a situation in which it was preferable to be paid with higher frequency in order to mitigate counterparts credit risk. The direct consequence was that Libor as well as Euribor rates with different tenors shown different portions of credit/liquidity spread which became higher as tenor increase. That was the end of the Single-Curve World. From that time every implied relationship between interest rates failed and it become necessary to calibrate, for each currency, multiple forwarding curve and particular relevance was given to the Overnight Curve (from now ON) which plays the role of forwarding curve for its specific tenor and the role of exogenous discounting curve for each tenor. This double function is due to the fact that all interest rate derivatives traded on regulated markets (like Futures) or collateralized with daily margining (like Forward Rate Agreements, Swaps and Basis Swaps) settle their positions on collateral accounts which earn the overnight rate and this is why the ON Curve usually plays the role of discounting curve as well as the role of forwarding curve.\\
-This work aims to discuss how a "state of art" ON curve can be calibrated starting from some general rate curve bootstrapping issues, presented in Chapter ..., like:
+This work aims to discuss how a "state of art" ON curve can be calibrated starting from some general rate curve bootstrapping issues, presented in Chapter \ref{chap:1}, like:
 
 \begin{description}
     \item{-} Curve parametrization;
@@ -105,18 +105,20 @@ This work aims to discuss how a "state of art" ON curve can be calibrated starti
     \item{-} Pillar interpolation technique.
 \end{description}
 
-After that, Chapter ... will be focused on the ON curve construction explaining which kind of choice are preferable passing through the same points outlined in Chapter ....
-Finally, Chapter ... represents the core of this work and analyze some peculiar overnight problems outlining different solutions in order to improve the ON curve quality. In particular this point will be stressed:
+After that, Chapter \ref{chap:2} will be focused on the ON curve construction explaining which kind of choice are preferable passing through the same points outlined in Chapter \ref{chap:1}
+Finally, Chapter \ref{chap:3} represents the core of this work and analyze some peculiar overnight problems outlining different solutions in order to improve the ON curve quality. In particular this point will be stressed:
 
 \begin{description}
+    \item{-} A Mixed Interpolation technique to respect empirical evidence;
     \item{-} Forward Stub utilization to prevent Overlapping instruments;
-    \item{-} Jumps and Turn of Year \textit{(TOY)} effect fixing in foreign currencies curve (the GBP and USD problem will be presented);
+    \item{-} Jumps and Turn of Year \textit{(TOY)} effect fixing in foreign currencies curves (the GBP and USD problem will be presented);
     \item{-} Fed Funds Arithmetic Average Coupon OIS introduction to Increase USD curve smoothness.
 \end{description}
 
 %%%CHAPTER1%%%
 
 \chapter{Rate Curve Bootstrap} \label{chap:1}
+
     \section{Parametrization} \label{section:1.1}
         \subsection{Description through Forward Rates} \label{subsection:1.1.1}
         \subsection{Classical solution through Discount Factors} \label{subsection:1.1.2}
@@ -205,7 +207,73 @@ Finally, Chapter ... represents the core of this work and analyze some peculiar 
         \end{figure}
         
         \subsection{Constrained Cubic Spline interpolation: The Kruger Scheme} \label{subsection:1.3.3}
+        Traditional cubic spline interpolation methods describe the unknown function $f$ as a collection of $N-1$ spline functions $f_{i}$ ($i=1,...,N-1$), each one defined on the interval $[t_{i},t_{i+1}]$ through the following criteria:
+        \begin{itemize}
+        \item $f_{i}$ is a third order polynomial
+        $$f_{i}(t)=a_{i}+b_{i}t+c_{i}t^{2}+d_{i}t^{3}$$
+        for $i=1,...,N-1$
+        \item $f_{i}$ pass through all the known points
+        $$f_{i}(t_{i})=y_{i}\text{ , }f_{i}(t_{i+1})=y_{i+1}$$
+        for $i=1,...,N-1$
+        \item First order derivative is the same for both functions on either side of a point 
+        $$f^{\prime}_{i}(t_{i+1})=f^{\prime}_{i+1}(t_{i+1})$$
+        for $i=1,...,N-2$
+        \item Second order derivative is the same for both functions on either side of a point
+        $$f^{\prime\prime}_{i}(t_{i+1})=f^{\prime\prime}_{i+1}(t_{i+1})$$
+        for $i=1,...,N-2$
+        \end{itemize}
+        The first equation give us $4N-4$ unknown parameters; the other equations give us $2(N-1)+(N-2)+(N-2)=4N-6$ equations. The two remaining equations are based on a border conditions for the starting and ending points. If we choose the following conditions:
+        $$f^{\prime\prime}_{1}(t_{1})=f^{\prime\prime}_{N-1}(t_{N})=0$$
+        the resulting spline is called {\it Natural Spline}.\\
+        These interpolation methods suffer of well-documented problems, such as spurious inflection points, excessive convexity, lack of locality and wide oscillations (the spline only alleviates the problem of oscillation seen when fitting a single polynomial). We present now the method of Kruger (cite Kruger) which combines the smooth curve characteristics of spline interpolation with non-overshooting behaviour of linear interpolation.\\
+        A Constrained Cubic Spline is constructed using previous equations and replacing the second order derivative at every point with:
+        $$f^{\prime}_{i}(t_{i+1})=f^{\prime}_{i+1}(t_{i+1})=f^{\prime}(t_{i+1})$$
+        for $i=1,...,N-2$ where $f^{\prime}(t_{i+1})$ is a specified first order derivative. The result is an interpolated function less smooth but with a specific slope at every point. Intuitively we know the slope of the spline will be between the slopes of the adjacent straight lines. If we define:
+        $$
+        S_{i}=\frac{y_{i+1}-y_{i}}{t_{i+1}-t_{i}}
+        $$
+        a good choice is:
+        $$f^{\prime}(t_{i})=
+        \begin{cases}
+        \frac{2}{\frac{1}{S_{i}}+\frac{1}{S_{i-1}}}&\text{if $S_{i}S_{i-1}\geq 0$} \\
+        0&\text{if $S_{i}S_{i-1}< 0$}
+        \end{cases}$$
+        Note that this interpolation scheme preserves monotonicity: in regions of monotonicity of the inputs - three successive increasing or decreasing points - the interpolating function preserves this property. Maximum and minimum points are allowed only on pillars.\\
+        The effect of constrained cubic interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:constrainedzero} and \ref{fig:constrainedlog}. We can notice that the quality of forward rates is really better than the quality achieved with linear interpolation, the best effect obtained interpolating on log discount factors. The heritage of linear interpolation is evident, mainly interpolating on zero rates: the "sawtooth" forwards have become "humps". To reduce this effect the only solution is to increase the number of pillars. Often this is achieved using interpolated quotes.
+        
+        \newpage
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/constrainedzero.png}
+        \caption{Constrained Cubic interpolation on Zero Rates for Euribor 6M Curve.}
+        \label{fig:constrainedzero}
+        \end{figure}
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/constrainedlog.png}
+        \caption{Constrained Cubic interpolation on Log Discount Factors.}
+        \label{fig:constrainedlog}
+        \end{figure}
+        
         \subsection{Monotonic Cubic Natural Spline interpolation: The Hyman Scheme} \label{subsection:1.3.4}
+        The Hyman's method or {\it Hyman filter} (cite hyman) attempts to address traditional cubic spline problems in a different way. It's a method that could be applied to any cubic interpolation scheme, for example the cubic natural spline one, to preserve monotonicity. In case of $C^{2}$ interpolation schemes the Hyman filter ensures monotonicity at the expenses of the second derivative of the interpolated function which will no longer be continuous in the points where the filter has been applied.\\
+        Let us briefly sketch how Hyman filter works. When input data are locally monotone (three successive increasing or decreasing points), if the chosen interpolating function is already monotonic, the Hyman filter leaves it unchanged preserving all of its original features, otherwise it changes the slopes locally in order to guarantee monotonicity. When the data are not locally monotone, instead, the interpolated function will have a maximum/minimum at the node. Maximum and minimum points are allowed also between pillars. \\
+        The effect of Hyman Filter applied to Cubic Natural Spline Interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:hymanzero} and \ref{fig:hymanlog}. Looking at the smoothness of forward rates, it's clear that this is the best approach from this point of view.
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/hymanzero.png}
+        \caption{Monotonic Cubic Natural Spline interpolation on Zero Rates.}
+        \label{fig:hymanzero}
+        \end{figure}
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/hymanlog.png}
+        \caption{Monotonic Cubic Natural Spline interpolation on Log Discount Factors.}
+        \label{fig:hymanlog}
+        \end{figure}
         
 %\blankpagestyle{headings}
 %\lipsum[1-2]
