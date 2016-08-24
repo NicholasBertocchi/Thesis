@@ -96,9 +96,25 @@
 \chapter*{Introduction} \label{chap:Intro}
 \markboth{\MakeUppercase{Introduction}}{}
 \addcontentsline{toc}{chapter}{Introduction}
-Every work which seeks to speak about interest rates term structure cannot avoid to begin from 2007 liquidity and credit crisis. Before that harmful year every market participants considered the credit risk on short time frame, for example less then one year, irrelevant and this opinion was reflected by the market in infinitesimal basis spread between different tenor rates. In other words, all banks in the system consider almost the same lend money to other banks for a year, for a month or for a day and this was possible because a big financial institution's default probability was seen as negligible. Otherwise it wasn't, as the Lehman Brothers case teach to the world. The panic in the markets during summer 2007 drives first to a crisis of confidence between the so called "Too big to fail" \footnote{This title was created during subprime crisis to speak about financial institutions that, as the nickname suggest, are so big that their default might means the overall system collapse} that, unable to estimate other institutions creditworthiness, can't no more trust each other and this leads to a situation in which it was preferable to be paid with higher frequency in order to mitigate counterparts credit risk. The direct consequence was that Libor as well as Euribor rates with different tenors shown different portions of credit/liquidity spread which became higher as tenor increase. That was the end of the Single-Curve World. From that time every implied relationship between interest rates failed and it become necessary to calibrate, for each currency, multiple forwarding curve and particular relevance was given to the Overnight Curve (from now ON) which plays the role of forwarding curve for its specific tenor and the role of exogenous discounting curve for each tenor. This double function is due to the fact that all interest rate derivatives traded on regulated markets (like Futures) or collateralized with daily margining (like Forward Rate Agreements, Swaps and Basis Swaps) settle their positions on collateral accounts which earn the overnight rate and this is why the ON Curve usually plays the role of discounting curve as well as the role of forwarding curve.\\
+Every work which seeks to speak about interest rates term structure cannot avoid to begin from 2007 liquidity and credit crisis. Before that harmful year every market participants considered the credit risk on short time frame, for example less then one year, irrelevant and this opinion was reflected by the market in infinitesimal basis spread between different tenor rates. In other words, all banks in the system consider almost the same lend money to other banks for a year, for a month or for a day and this was possible because a big financial institution's default probability was seen as negligible. Otherwise it wasn't, as the Lehman Brothers case teach to the world. The panic in the markets during summer 2007 drives first to a crisis of confidence between the so called "Too big to fail" \footnote{This title was created during subprime crisis to speak about financial institutions that, as the nickname suggest, are so big that their default might means the overall system collapse} that, unable to estimate other institutions creditworthiness, can't no more trust each other and this leads to a situation in which it was preferable to be paid with higher frequency in order to mitigate counterparts credit risk. The direct consequence was that Libor as well as Euribor rates with different tenors shown different portions of credit/liquidity spread which became higher as tenor increase; the basis explosion is shown in Figure \ref{fig:basisafter} and it is important to underlying that this effect was not due to a correlation break, as the Figure \ref{fig:correlationbreak} suggest  That was the end of the Single-Curve World. From that time every implied relationship between interest rates failed and it become necessary to calibrate, for each currency, multiple forwarding curve and particular relevance was given to the Overnight Curve (from now ON) which plays the role of forwarding curve for its specific tenor and the role of exogenous discounting curve for each tenor. This double function is due to the fact that all interest rate derivatives traded on regulated markets (like Futures) or collateralized with daily margining (like Forward Rate Agreements, Swaps and Basis Swaps) settle their positions on collateral accounts which earn the overnight rate and this is why the ON Curve usually plays the role of discounting curve as well as the role of forwarding curve.\\
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.8\textwidth]{images/basisafter}
+\caption{After summer 2007 the $3X6$ FRA implicit in Euribor 6M and Euribor 3M fixings it was no longer consistent with the $3X6$ FRA quoted by the market.}
+\label{fig:basisafter}
+\end{figure}
+        
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.8\textwidth]{images/correlationbreak}
+\caption{The effect shown in previous figure can not be attributed to a correlation break.}
+\label{fig:correlationbreak}
+\end{figure}
+
 This work aims to discuss how a "state of art" ON curve can be calibrated starting from some general rate curve bootstrapping issues, presented in Chapter \ref{chap:1}, like:
 
+\newpage
 \begin{description}
     \item{-} Curve parametrization;
     \item{-} Bootstrap Algorithms;
@@ -110,7 +126,7 @@ Finally, Chapter \ref{chap:3} represents the core of this work and analyze some 
 
 \begin{description}
     \item{-} A Mixed Interpolation technique to respect empirical evidence;
-    \item{-} Forward Stub utilization to prevent Overlapping instruments;
+    \item{-} Forward Stub utilization to prevent overlapping instruments;
     \item{-} Jumps and Turn of Year \textit{(TOY)} effect fixing in foreign currencies curves (the GBP and USD problem will be presented);
     \item{-} Fed Funds Arithmetic Average Coupon OIS introduction to Increase USD curve smoothness.
 \end{description}
@@ -118,12 +134,49 @@ Finally, Chapter \ref{chap:3} represents the core of this work and analyze some 
 %%%CHAPTER1%%%
 
 \chapter{Rate Curve Bootstrap} \label{chap:1}
+This first chapter wants to outline the most important issues concerning rate curves calibration in a general point of view. Every argument discussed here can be applied to all rate curves and is not specific of the Overnight case which, instead, will be discussed in the next chapter.
 
     \section{Parametrization} \label{section:1.1}
-        \subsection{Description through Forward Rates} \label{subsection:1.1.1}
-        \subsection{Classical solution through Discount Factors} \label{subsection:1.1.2}
+    Chose the rate curve parametrization means decide how the curve must be described. There are three workable solution that can be adopted, namely:\\
+    
+    \begin{description}
+        \item{-} Description through Instantaneous Forward Rates ($f\ped{inst}$)
+        \item{-} Description through Zero Rates ($z(t\ped{1})$)
+        \item{-} Description through Pseudo-Discount Factors ($P(t\ped{1}$)) \footnote{For a more detailed description of Forward Rates, Zero Rates and Discount Factors see \ref{app:typesofrates}}\\
+    \end{description}
+    \\
+    Since this relationship is true:
+    
+    $$P(t\ped{i}) = e^{-z(t\ped{i})t\ped{i}} = e^{\int_{0}^{t\ped{i}} f\ped{inst} ds}$$
+    \\
+    or equivalently:
+    
+    $$-\ln(P(t\ped{i})) = -z(t\ped{i})t\ped{i} = \int_{0}^{t\ped{i}} f\ped{inst} ds$$
+    \\
+    the three solutions are equivalent except for one peculiarity, namely that Pseudo-Discount Factors are the only ones well defined at $t=0$ (where the value is $1$)\footnote{In the following sections will be shown that this is the reason why the pseudo-discount factor parametrization is the most often used}
+    
+        \subsection{Possible Description through Forward Rates} \label{subsection:1.1.1}
+        Each rate curve $C_{x}$ of the framework is a forwarding curve linked to a specific tenor $x$. The most natural parametrization should be the one that models directly forward rates because the market quotes forward rates (and not other quantities like discount factors). Forward rates directly quoted by the market through FRA, Futures and indirectly through Interest Rates Swaps and Basis Swaps, are simple forward rates corresponding to a triplet $(s,s+x,\tau_{x})$ where $s\geq t$ and $\tau_{x}$ is the specific day count convention related to the underlying index of each instrument (example: Euribor $xM$). So our curve $C_{x}$ should be described by:
+        $$C_{x}(t)=\{s\rightarrow F_{x}(t;s,s+x)|s\geq t\}$$
+        Unfortunately, this is not the commonly used approach.
+        
+        \subsection{Classical solution through Pseudo-Discount Factors}  \label{subsection:1.1.2}
+        As a consequence of the relationship between $P(t\ped{1})$, $z(t\ped{1})$ and $f\ped{inst}$ it is always possible to derive a forward rate via pseudo-discount factor by means of the following equation:
+        
+        $$F_{x}(t;s_{1},s_{2})=\frac{1}{\tau(s_{1},s_{2})}\left(\frac{P_{x}(t;s_{1})}{P_{x}(t;s_{2})}-1\right)$$\\
+        
+        In the old Single-Curve World this relationship was a result of a no-arbitrage condition which does not hold anymore but now, in a Multi-Curve System, this is merely the definition of a {\it pseudo-discount factors} function $P_{x}(t;s)$.\\
+        To clarify this concept we can make the following example. In the old Single-Curve world, before 2007 crisis, in the EUR market we could calculate the forward rate $F(t;t+3M,t+6M)$ starting from the values $P(t;t+3M)$ and $P(t;t+6M)$ deduced from Euribor $3M$ and Euribor $6M$ fixings with a no arbitrage condition; the resulting value was in line with the market quote of the $3X6$ FRA. With the large Basis Swap spreads presently quoted on the market this relation is no more valid: if we calculate the $3X6$ FRA implicit in Euribor 6M and Euribor 3M fixings (as explained above) we do not obtain the $3X6$ FRA quoted by the market (see Figure \ref{fig:basisafter}).
+        The discussion above has proved that for each forward curve $C_{x}$ we have the following alternative (almost equivalent) descriptions:
+        
+        $$C_{x}(t)=\{s\rightarrow P_{x}(t;s)|s\geq t\}$$
+        $$C_{x}(t)=\{s\rightarrow z_{x}(t;s)|s> t\}$$
+        $$C_{x}(t)=\{s\rightarrow f_{x}(t;s)|s> t\}$$
+        
+        The advantage of the pseudo-discount factor description (compared to a direct forward rates description) is that, as already mentioned, they are well defined for $t=0$. On the other hand the drawbacks are obvious. First of all, you are not modelling directly the market quantities, the ones on which we have some intuition (the forward rates). Secondly the function $P_{x}(t,s)$ has an arbitrary part of length $x$ that must be chosen. When $x=ON$ this arbitrary part is really small (few days) and it can be fixed with some market quotes. So in this case we can use the pseudo-discount factors description without problems at all and is also consistent with the role of $C_{ON}$ as discount curve of the framework (in this case pseudo-discount factors are real discount factors!). For the other tenors we will have to introduce synthetic deposits in order to manage this arbitrariness. However, the description of synthetic deposits is outside this work's objectives.
+        
     \section{Calibration Algorithms} \label{section:1.2}
-    Pricing of all interest rate derivatives requires modelling the future dynamics of the zero rates (or yield) curve term structure. A key point to understand is that finding the best way to build the rates term structure is crucial in order to obtain reasonable price, since an incorrect one will fail to produce them. The aim to which we have to be targeted on when calibrating an yield curve is to minimize, or eliminated, repricing errors especially on the most liquid instruments that are the one preferred for calibration as it will be discussed in .... 
+    Pricing of all interest rate derivatives requires modelling the future dynamics of the zero rates (or yield) curve term structure. A key point to understand is that finding the best way to build the rates term structure is crucial in order to obtain reasonable price, since an incorrect one will fail to produce them. The aim to which we have to be targeted on when calibrating an yield curve is to minimize, or eliminated, repricing errors especially on the most liquid instruments that are the one preferred for calibration as it will be discussed in \ref{section:2.1}.
     In order to fulfil our task of error minimization there are different ways that can be divided into 2 main classes that, as a common condition, both require a set of $N$ pre-selected market instruments:
     \begin{itemize}
         \item Best-Fit Algorithm
@@ -281,7 +334,7 @@ Finally, Chapter \ref{chap:3} represents the core of this work and analyze some 
 %%%CHAPTER2%%%
 
 \chapter{Overnight Curve Definition} \label{chap:2}
-    \section{Instrument selection criteria}
+    \section{Instrument selection criteria} \label{section:2.1}
         \subsection{Overnight Deposits} \label{subsection:2.1.1}
         \subsection{Overnight Indexed Swap {\it (OIS)}} \label{subsection:2.1.2}
         \subsection{ECB Dated OIS} \label{subsection:2.1.3}
@@ -426,7 +479,7 @@ Finally, Chapter \ref{chap:3} represents the core of this work and analyze some 
 \chapter{Interest Rate Conventions} \label{app:Conv}
 With the next two appendices i want to go a step back. The main goal of this work is outline the most important steps related to curve calibration techniques, with particular attention to the overnight one, and this involve a deep understanding of interest rate calculation and conventions but also of the whole set of financial instruments involved in the bootstrap procedure. 
 The one first is devoted to introduce some basic and fundamental interest rate rule in order to fix the idea that there are different ways to obtain an interest rate that are strictly connected to the compounding rule chosen, to the way in which time is calculated and to the type of interest we want to derive.
-    \section{Capitalization and Discount Factors}
+    \section{Capitalization and Discount Factors} \label{app:capitalization}
     We are all familiar with the concept that cash availability it's a privilege we don't want to give up for free. Of course, everyone who has an amount of money want to be compensated if he decides to lend it and this is the reason why negative interests rates were unthinkable. however, today's index fixings are deeply below zero due to very expansive Central Bank's monetary policy and, in this scenario, a future amount of money worth less than the same amount of money owned today. Aside from negative rates issue, what we need is answer to the questions:
     \begin{description}
         \item{-} What is the future value of a today's amount of money?
@@ -444,22 +497,22 @@ The one first is devoted to introduce some basic and fundamental interest rate r
     $$C(t_1) < C(t_2) \mbox{ if } t_1<t_2\mbox{ and:}$$\\
     As we will see, define the function $h(R,\tau)$ isn't so easy as it seems because the capitalization formula can be measured in different ways.
     Changing parameters has a strong impact on capitalization/discount factors; therefore, it's fundamental to take confidence with all kinds of parametrization starting from compounding rules.
-    \section{Compounding Rules}
+    \section{Compounding Rules} \label{app:compoundingrules}
     For compounding rule we mean a method to calculate the future value of an amount of money. The easier way to describe $h(R,(t_2-t_1))$ function is to use the {\itshape simple compounding scheme}.
-        \subsection{Simple Compounding}
+        \subsection{Simple Compounding} \label{app:simple}
         This scheme implies that: $$ I = N*R*\tau$$ $$N+I=N*(1+R*\tau)$$ where $I$ is the interest amount in $t_2$ and $N$ is the notional at the beginning of the accrual period ($t_1$). Accordingly, the Capitalization Factor in simple compounding is: 
         $$C(t) = h(R,\tau) = (1+R*\tau)$$\\
         and the Discount Factor is: 
         $$D(t) = \frac{1}{h(R,\tau)} = \frac{1}{(1+R*\tau)}$$
         Therefore, the capital grows linearly during time because interest amounts are not capitalized to produce other interests.
-        \subsection{Compounded Interest Rate}
+        \subsection{Compounded Interest Rate} \label{app:compounded}
         In this scheme interests are compounded $m$ times per year for $\tau$ years at rate R. So, investing a notional N produce at the end of the accrual period:
         $$N*\left(1+\frac{R}{m}\right)^{m\tau}$$   
         The compounded Capitalization and Discount Factors, therefore, are:
         $$C(t) = h(R,\tau) = \left(1+\frac{R}{m}\right)^{m\tau}$$ 
         $$D(t) = \frac{1}{h(R,\tau)} = \left(1+\frac{R}{m}\right)^{-m\tau}$$
         Using the compounded scheme means that, every $m$ times the interest is compounded, the capital accrued become the new initial capital and this means that interests are producing other interests. 
-        \subsection{Continuous Compounding}
+        \subsection{Continuous Compounding} \label{app:continuous}
         This compounding rule can be view as a particular case of the preceding one in which we imagine to compound more and more frequently simply taking the limit of $m$ tending to infinity. Expressing this concept in formulas the continuously compounded interest rate is given by:
         $$\lim_{m\rightarrow+\infty} N*\left(1+\frac{R}{m}\right)^{m\tau} = N*e^{R\tau}$$
         Hence, the Capitalization and Discount factors in continuous compounding are:
@@ -467,7 +520,7 @@ The one first is devoted to introduce some basic and fundamental interest rate r
         $$D(t) = e^{-R\tau}$$
         A good approximation of the continuous interest is to do the daily compounded interest rate. Assuming a year composed by 365 days we have that:
         $$e^{R\tau} \approx \left(1+\frac{R}{365}\right)^{-365\tau}$$
-    \section{Day-Count Conventions}
+    \section{Day-Count Conventions} \label{app:daycounter}
     After having specified how the interest can be compounded, we have to describe how we can measure the year fraction $\tau = (t_2-t_1)$. For a easier computation, market participants use different kind of conventions called {\itshape Day Counter}; let's describe the most popular:
     \begin{itemize}
     \item \textit{Actual/360} : where \textit{Actual} is the number of days between the two dates.
@@ -486,9 +539,9 @@ The one first is devoted to introduce some basic and fundamental interest rate r
     \\
     \end{itemize}
     It's evident that the day counter choice affects directly the measure of the accrual period, and so, the    interest accumulated.
-    \section{Calendar}
+    \section{Calendar} \label{app:calendar}
     Banks and stock exchange are not open every day for business, so we need to define a set of dates in which two legal entities agree to exchange cash flows, the so called business calendar. We can find different calendar depending on which area we are dealing with. For EURO currency, for example, we have TARGET (Trans-European Automated Real-time Gross settlement Express Transfer) calendar, for GBP (Great Britain Pound) we have London Stock Exchange Calendar with a different set of holidays and so on.
-    \section{Business Day Conventions}
+    \section{Business Day Conventions} \label{app:businessconv}
     which determines how non-business days have to be treated. Imagine, for example, that a ZCB (\textit{Zero Coupon Bond} payment date falls on a holiday; the counterparts need a pre-decided rule which stabilizes if the payment have to be anticipated or postponed. This types of conventions have properly this aim and the most widely used are:
     \\
     \begin{itemize}
@@ -498,10 +551,10 @@ The one first is devoted to introduce some basic and fundamental interest rate r
     \item Modified Preceding (ISDA): choose the first business day before the given holiday, unless it belongs to a different month; in that case choose the first business day after the given holiday;
     \item Unadjusted: use the given date even if it is an holiday.
     \end{itemize}
-    \section{Evaluation and Settlement Date}
+    \section{Evaluation and Settlement Date} \label{app:evalsettle}
     We need to do a distinction between the \textit{Settlement Date}, namely the date in which an investment starts to earn interests, and \textit{Evaluation Date} (or \textit{Fixing Date}), the date in which contracts are traded, because frequently they aren't the same.\\
     For example, in EURO Market the \textit{Settlement Date} is 2 business days after the \textit{Evaluation Date}; so if today a trader make a 1 month investment at rate $R$, the accrual period doesn't starts today but 2 business days after; consequently, the maturity date will be 1 month after the \textit{Settlement Date} and not the \textit{Evaluation Date}.
-    \section{Types of Interest Rates}
+    \section{Types of Interest Rates} \label{app:typesofrates}
     A final and crucial description must be dedicated to each type $R$ we can use in the $h(R,\tau)$ function. in this context we have to define 3 different classes of rates, namely:
     \begin{itemize}
     \item{\bfseries Zero Rates (or Spot Rates)}: it's the rate of interest earned on an investment that starts accruing interests from today $(= \mbox{spot date})$ and provides a unique payoff only at maturity date (no intermediate coupons).
