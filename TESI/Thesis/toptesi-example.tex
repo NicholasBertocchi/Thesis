@@ -334,10 +334,100 @@ This first chapter wants to outline the most important issues concerning rate cu
 %%%CHAPTER2%%%
 
 \chapter{Overnight Curve Definition} \label{chap:2}
+This chapter wants to focus on overnight curve construction passing through every issue outlined in Chapter \ref{chap:1}. The objective is to present a calibration best practice related on the specific overnight curve case which is the core argument of this work.
     \section{Instrument selection criteria} \label{section:2.1}
+    Before 2007, in the Single-Curve World, fixed income pricing requires to model just one curve named the Standard Curve. This particular curve was calibrated selecting among a wide range of instruments with different tenors. Market instruments were more than needed and this permits to calibrate a curve with a high pillar density in which the only problem was to choose the best set of instruments following a liquidity criteria. \\
+    The liquidity criteria implies that the major selection priority is given to the most liquid instruments available on the market. This principle is followed because instrument's liquidity is due to the trade volume. The more an instrument is traded and the more his value tends to be fair because of market efficiency. The bootstrap algorithm must be fed only with fair quotes, which vehicle the most efficient information, in order to calibrate a fair curve. It is strictly not recommended to bootstrap illiquid quotes in order to bootstrap market efficient information instead of market noise. \\
+    Since the beginning of the Multi-Curve World, the curve selection criteria become more difficult due to the fact that every curve has to be built using his specific tenor instruments. In addiction many interest rate derivatives have become illiquid and the wide range of market quotes has decreased dramatically. The present multi-curves have a far less pillar density compared to the old standard one (this is the reason why synthetic deposits are necessary) and this limits the outcome quality. Fortunately, in the overnight case, there are many liquid instruments that can be used to cover all the curve behaviour, from the short term to the last section (usually from spot date to 60Y). In particular overnight curve is bootstrapped using the following instruments:
+    
+    \begin{itemize}
+    \item ON and TN Deposits in order to set the curve reference date to today's date (these instruments are not properly based on Eonia - the underlying index is the one-day tenor Euribor - thus we are introducing a very small inconsistency);
+    \item all the available forward starting OIS on ECB dates;
+    \item spot starting OIS up to 60Y.
+    \end{itemize}
+    
+    The ECB OIS are more liquid than spot starting OIS and this is way we always use them when available. However, introducing forward start ECB OIS leads to a overlapping instruments problem that can be fixed using a forward Stub, as it will be discussed in \ref{section:3.2}. Next section will describe in detail this kind of instruments.
+    
         \subsection{Overnight Deposits} \label{subsection:2.1.1}
-        \subsection{Overnight Indexed Swap {\it (OIS)}} \label{subsection:2.1.2}
+        \textit{Interbank Deposits} are unsecured loans made by a bank to another bank. \textit{Deposits} are standard money market zero coupon contracts, where the \textit{Lender} pays at start day (\textit{settlement day}) a notional amount $N$ to the \textit{Borrower} and he receives back the notional amount $N$ plus the interest earned over the period that goes from settlement date to maturity date. When we are studying \textit{Deposits} we have to take care of $3$ important dates:
+        
+        \begin{itemize}
+        \item \textit{Fixing date} ($t_{0}^F$) or today: the date in which we fix the interest rate that will be applied on our \textit{Deposit};
+        \item \textit{Settlement Date} or \textit{Spot Date} ($t_{0}$): the date in which our \textit{Deposit} starts to accrue interest;
+        \item \textit{Maturity Date} ($t_{1}$): the date in which the contract ends and the notional plus the interests earned are paid back.
+        \end{itemize}
+
+        The interest rate applied is annual and it is simply compounded; it is called \textit{Deposit rate} and we denote it as $r_{t}^{Depo}$. The payoff of this contract at maturity date ($t_{1}$) is:
+     
+        $$Depo_{t_{1}}(t_{1}) = N \cdot (1 + r_{t_{1}}^{Depo}\tau_{0,1})$$ 
+     
+        Where: $\tau_{0,1}$ is the \textit{year-fraction} between $t_{0}$ and $t_{1}$.
+
+        If we want to compute the value today ($t_{0}^F$) of this \textit{Deposit} we have to discount this unique cashflow to today:
+     
+        $$Depo_{t_{1}}(t_{0}^F) = D(t_{0}^F,t_{1})\cdot Depo_{t_{1}}(t_{1}) = N$$
+     
+        since: $r_{t_{1}}^{Depo} = r_t$ (the Zero-Rate), we had: $D(t_{0}^F,t_{1}) = \frac{1}{(1+r_{t_{1}}^{Depo}\tau_{0,1})}$.\\
+
+        These contracts are quoted and exchanged on the \textit{Interbank OTC (Over The Counter) market} for various currencies and maturities, that usually do not go beyond the year.However the first 2 maturities are a bit different from the others: 
+        
+        \begin{itemize}
+        \item \textit{OverNight (ON)}: it is a \textit{Deposit} that starts today, at \textit{Fixing Date} ($t_{0}^F$), lasts for one day, and ends tomorrow ($t_{0}^F$+1);
+        \item \textit{Tomorrow-Next (TN)}: this contract starts tomorrow ($t_{0}^F$+1), lasts for one day, and ends the day after tomorrow ($t_{0}^F$+2); for example in EURO market, where settlement date is today plus 2 business days, this contract starts tomorrow (the next business day after today) and ends at settlement date.
+        \end{itemize}
+        
+        After that we have \textit{Spot-Next (SN)} that is a regular contract: starts at \textit{Spot Date}, or settlement date ($t_{0}$), lasts for one day, and ends the day after ($t_{0}+1$). The following \textit{Deposits} are denoted with their maturity, e.g.  $SW$ (Spot Week), $1M$ (1 Month), $3M$ (3 Months) and so on. The \textit{Business Day Convention} is \textit{Following} for maturities shorter then 1 month and \textit{Modified Following} for longer maturities.
+        
+        \subsection{Interest Rate Swap {\it (IRS)}} \label{subsection:2.1.2}
+        Interest Rate Swaps (IRS) are OTC contracts in which two counter-parties agree to exchange two streams of cashflows typically tied to a floating LIBOR or EURIBOR rate, $L(t_{i-1},t_{i})$, versus a fixed rate $r^{IRS}$. IRS can be seen as a set of consecutives FRA: on a number of future dates a fixed interest rate, $r^{IRS}$, will be exchanged for a floating interest rate (LIBOR). The payments dates of the floating rate and the fixed rate can be different, in that case we still can see IRS as a portfolio of FRA, part of them with a null fixed or floating rate (those with single-direction payment). All payments are based on the same notional $N$ and are settled at the end of each period. \\
+        An IRS is characterized by two schedule of payments, one for the floating rate, the so called \textit{floating leg}, and one for the fixed rate, the \textit{fixed leg}:
+        
+        \begin{itemize}
+        \item \textit{floating leg dates} = $\{t_0,t_1, ... , t_n\}$;
+        \item \textit{fixed leg dates} = $\{s_0,s_1, ... , s_m\}$;
+        \end{itemize}
+        
+        with: $t_0 = s_0$ and $t_n = s_m$; \\
+        The coupon payoffs in one time interval, between $t_i$ and $t_{i-1}$ for the floating leg and between $s_j$ and $s_{j-1}$ for the fixed leg, evaluated at the end date of the period, are (with notation $IRS_{leg}$($evaluation$-$date$; $start$-$date$, $end$-$date$, $rate$)):
+        
+        \begin{align}
+        &IRS_{float}(t_i;t_{i-1},t_i,L) = N \cdot L(t_{i-1},t_i) \cdot \tau_{i-1,i} \\ 
+        &IRS_{fixed}(s_j;s_{j-1},s_j,r^{IRS}) = N \cdot r^{IRS} \cdot \tau_{j-1,j};
+        \end{align}
+
+        The fixed interest rate of the contract, $r^{IRS}$, is calculated such that the $NPV$ of the contract at $t_0$ is equal to $0$, so:
+
+        $$NPV(t_0) = \sum_{i=1}^n IRS_{float}(t_{i-1};t_{i},t_i,L(t_i,t_{i-1}))\cdot D(t_0,t_i)$$\\
+        $$- \sum_{j=1}^m IRS_{fixed}(s_j;s_{j-1},s_j,r^{IRS}) \cdot D(s_0,s_j) = 0$$
+
+        Solving for $r^{IRS}$ we can find the correct rate, called \textit{Swap fair rate}.
+        
+        $$r^{IRS} = \frac{\sum_{i=1}^n (L(t_{i-1},t_i) \cdot \tau_{i-1,i}\cdot D(t_0,t_i))}{\sum_{j=1}^m (\tau_{j-1,j} \cdot D(s_0,s_j))}$$
+        
+        A particular case of IRS are Overnight Indexed Swap (OIS) where the floating leg is tied to the overnight rate. Payments of the floating leg are not done every day, but at specific coupon dates, the fixed leg dates, and therefore the floating rate is daily compounded over that period. The fixed rate for $OIS$ is normally a simple rate with interest at maturity date, for $OIS$ shorter than 1 year, and it is an annual rate for longer maturities. \\
+        The floating leg is:
+        
+        $$IRS^{OIS}_{float}(t_i;t_{i-1},t_i,R^{ON}(t_{i-1},t_i)) = N \cdot R^{ON}(t_{i-1},t_i) \cdot \tau^{ON}_{i-1,i}$$ 
+
+        Since $R^{ON}(t_{i-1},t_i)$ is daily compounded, with $M$ indicating the number of business days between $t_{i-1}$ and $t_{i}$, we have ($t_{{i-1}_{0}}=t_{i-1}$, $t_{{i-1}_{M}}=t_{i}$):
+
+        $$1+R^{ON}(t_{i-1},t_i) \cdot \tau^{ON}_{i-1,i} = \prod_{k=1}^M (1 + r^{ON}(t_{{i-1}_{k-1}},t_{{i-1}_k})\tau^{ON}_{{i-1}_{k-1},{i-1}_{k}})$$
+
+        $$R^{ON}(t_{i-1},t_i) = \frac{1}{\tau^{ON}_{i-1,i}} \cdot \left(\prod_{k=1}^n (1 + r^{ON}(t_{{i-1}_{k-1}},t_{{i-1}_k})\tau^{ON}_{{i-1}_{k-1},{i-1}_{k}}) - 1\right)$$
+
+        For determine the $r^{OIS}$ rate we proceed like a simple IRS contract. We calculate the $NPV$ of the swap and we impose that his value in $t_0$ is equal to 0. Since overnight rate is now regarded as a better proxy for the risk-free rate than the LIBOR, we can use it even for discounting; therefore:
+
+        $$\sum_{i=1}^n (R^{ON}(t_{i-1},t_i) \cdot \tau^{ON}_{i-1,i}\cdot D(t_0,t_i)) = \sum_{i=1}^n (D(t_0,t_{i-1}) - D(t_0,t_i))$$\\
+        $$= 1 - D(t_0,t_n)$$
+
+        This is the so called telescopic property of floating leg of the $OIS$. Using this result:
+        
+        $$r^{OIS} = \frac{1 - D(t_0,t_n)}{\sum_{i=1}^n (\tau^{ON}_{i-1,i} \cdot D(t_0,t_i))}$$\\
+        
+        Which is the OIS rate.
+
         \subsection{ECB Dated OIS} \label{subsection:2.1.3}
+        
     \section{Calibration choices} \label{section:2.2} 
 
 %\selectlanguage{english}
@@ -477,8 +567,8 @@ This first chapter wants to outline the most important issues concerning rate cu
   \renewcommand\thetable{\thesection\arabic{table}}
   \renewcommand\thefigure{\thesection\arabic{figure}}
 \chapter{Interest Rate Conventions} \label{app:Conv}
-With the next two appendices i want to go a step back. The main goal of this work is outline the most important steps related to curve calibration techniques, with particular attention to the overnight one, and this involve a deep understanding of interest rate calculation and conventions but also of the whole set of financial instruments involved in the bootstrap procedure. 
-The one first is devoted to introduce some basic and fundamental interest rate rule in order to fix the idea that there are different ways to obtain an interest rate that are strictly connected to the compounding rule chosen, to the way in which time is calculated and to the type of interest we want to derive.
+With the next two appendices i want to go a step back. The main goal of this work is outline the most important issues related to curve calibration techniques, with particular attention to the overnight one, and this involve a deep understanding of interest rate calculation and conventions but also of the whole set of financial instruments involved in the bootstrap procedure. 
+This devoted to introduce some basic and fundamental interest rate rule in order to fix the idea that there are different ways to obtain an interest rate that are strictly connected to the compounding rule chosen, to the way in which time is calculated and to the type of interest.
     \section{Capitalization and Discount Factors} \label{app:capitalization}
     We are all familiar with the concept that cash availability it's a privilege we don't want to give up for free. Of course, everyone who has an amount of money want to be compensated if he decides to lend it and this is the reason why negative interests rates were unthinkable. however, today's index fixings are deeply below zero due to very expansive Central Bank's monetary policy and, in this scenario, a future amount of money worth less than the same amount of money owned today. Aside from negative rates issue, what we need is answer to the questions:
     \begin{description}
