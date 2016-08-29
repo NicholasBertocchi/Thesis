@@ -96,7 +96,7 @@
 \chapter*{Introduction} \label{chap:Intro}
 \markboth{\MakeUppercase{Introduction}}{}
 \addcontentsline{toc}{chapter}{Introduction}
-Every work which seeks to speak about interest rates term structure cannot avoid to begin from 2007 liquidity and credit crisis. Before that harmful year every market participants considered the credit risk on short time frame, for example less then one year, irrelevant and this opinion was reflected by the market in infinitesimal basis spread between different tenor rates. In other words, all banks in the system consider almost the same lend money to other banks for a year, for a month or for a day and this was possible because a big financial institution's default probability was seen as negligible. Otherwise it wasn't, as the Lehman Brothers case teach to the world. The panic in the markets during summer 2007 drives first to a crisis of confidence between the so called "Too big to fail" \footnote{This title was created during subprime crisis to speak about financial institutions that, as the nickname suggest, are so big that their default might means the overall system collapse} that, unable to estimate other institutions creditworthiness, can't no more trust each other and this leads to a situation in which it was preferable to be paid with higher frequency in order to mitigate counterparts credit risk. The direct consequence was that Libor as well as Euribor rates with different tenors shown different portions of credit/liquidity spread which became higher as tenor increase; the basis explosion is shown in Figure \ref{fig:basisafter} and it is important to underlying that this effect was not due to a correlation break, as the Figure \ref{fig:correlationbreak} suggest  That was the end of the Single-Curve World. From that time every implied relationship between interest rates failed and it become necessary to calibrate, for each currency, multiple forwarding curve and particular relevance was given to the Overnight Curve (from now ON) which plays the role of forwarding curve for its specific tenor and the role of exogenous discounting curve for each tenor. This double function is due to the fact that all interest rate derivatives traded on regulated markets (like Futures) or collateralized with daily margining (like Forward Rate Agreements, Swaps and Basis Swaps) settle their positions on collateral accounts which earn the overnight rate and this is why the ON Curve usually plays the role of discounting curve as well as the role of forwarding curve.\\
+Every work which seeks to speak about interest rates term structure cannot avoid to begin from 2007 liquidity and credit crisis. Before that harmful year every market participants considered the credit risk on short time frame, for example less then one year, irrelevant and this opinion was reflected by the market in infinitesimal basis spread between different tenor rates. In other words, all banks in the system consider almost the same lend money to other banks for a year, for a month or for a day. This context was possible because a big financial institution's default probability was seen as negligible but, otherwise, it wasn't, as the Lehman Brothers case teach to the world. The panic in the markets during summer 2007 drives first to a crisis of confidence between the so called "Too big to fail" \footnote{This title was created during subprime crisis to speak about financial institutions that, as the nickname suggest, are so big that their default might means the overall system collapse} that, unable to estimate other institutions creditworthiness, can't no more trust each other and this leads to a situation in which it was preferable to be paid with higher frequency in order to mitigate counterparts credit risk. The direct consequence was that Libor as well as Euribor rates with different tenors shown different portions of credit/liquidity spread which became higher as tenor increase. That was the end of the Single-Curve World. The basis explosion is shown in Figure \ref{fig:basisafter} and it is important to underlying that this effect was not due to a correlation break, as the Figure \ref{fig:correlationbreak} suggest. From that time every implied relationship between interest rates failed and it become necessary to calibrate, for each currency, multiple forwarding curve and particular relevance was given to the Overnight Curve which plays the role of forwarding curve for its specific tenor and the role of exogenous discounting curve for each tenor. This double function is due to the fact that all interest rate derivatives traded on regulated markets (like Futures) or collateralized with daily margining (like Forward Rate Agreements, Swaps and Basis Swaps) settle their positions on collateral accounts which earn the overnight rate and this is why the overnight curve usually plays the role of discounting curve as well as the role of forwarding curve.\\
 
 \begin{figure}[!h]
 \centering
@@ -112,7 +112,7 @@ Every work which seeks to speak about interest rates term structure cannot avoid
 \label{fig:correlationbreak}
 \end{figure}
 
-This work aims to discuss how a "state of art" ON curve can be calibrated starting from some general rate curve bootstrapping issues, presented in Chapter \ref{chap:1}, like:
+This work aims to discuss how a "state of art" overnight curve can be calibrated starting from some general rate curve bootstrapping issues, presented in Chapter \ref{chap:1}, like:
 
 \newpage
 \begin{description}
@@ -121,13 +121,13 @@ This work aims to discuss how a "state of art" ON curve can be calibrated starti
     \item{-} Pillar interpolation technique.
 \end{description}
 
-After that, Chapter \ref{chap:2} will be focused on the ON curve construction explaining which kind of choice are preferable passing through the same points outlined in Chapter \ref{chap:1}
-Finally, Chapter \ref{chap:3} represents the core of this work and analyze some peculiar overnight problems outlining different solutions in order to improve the ON curve quality. In particular this point will be stressed:
+After that, Chapter \ref{chap:2} will be focused on the overnight curve construction explaining which kind of choice are preferable passing through the same points outlined in Chapter \ref{chap:1}.
+Finally, Chapter \ref{chap:3} represents the core of this work and analyze some peculiar overnight problems outlining different solutions in order to improve the curve quality. In particular this points will be stressed:
 
 \begin{description}
     \item{-} A Mixed Interpolation technique to respect empirical evidence;
     \item{-} Forward Stub utilization to prevent overlapping instruments;
-    \item{-} Jumps and Turn of Year \textit{(TOY)} effect fixing in foreign currencies curves (the GBP and USD problem will be presented);
+    \item{-} Jumps and Turn of Year \textit{(TOY)} effect in foreign currencies curves (the GBP and USD problem will be presented);
     \item{-} Fed Funds Arithmetic Average Coupon OIS introduction to Increase USD curve smoothness.
 \end{description}
 
@@ -137,7 +137,7 @@ Finally, Chapter \ref{chap:3} represents the core of this work and analyze some 
 This first chapter wants to outline the most important issues concerning rate curves calibration in a general point of view. Every argument discussed here can be applied to all rate curves and is not specific of the Overnight case which, instead, will be discussed in the next chapter.
 
     \section{Parametrization} \label{section:1.1}
-    Chose the rate curve parametrization means decide how the curve must be described. There are three workable solution that can be adopted, namely:\\
+    Choosing the rate curve parametrization means decide how the curve must be described. There are three workable solution that can be adopted, namely:\\
     
     \begin{description}
         \item{-} Description through Instantaneous Forward Rates ($f\ped{inst}$)
@@ -153,10 +153,10 @@ This first chapter wants to outline the most important issues concerning rate cu
     
     $$-\ln(P(t\ped{i})) = -z(t\ped{i})t\ped{i} = \int_{0}^{t\ped{i}} f\ped{inst} ds$$
     \\
-    the three solutions are equivalent except for one peculiarity, namely that Pseudo-Discount Factors are the only ones well defined at $t=0$ (where the value is $1$)\footnote{In the following sections will be shown that this is the reason why the pseudo-discount factor parametrization is the most often used}
+    the three solutions are almost equal except for the Pseudo-Discount Factors case which is the only one well defined for $t=0$ (where the value is $1.00$)\footnote{In the following sections will be shown that this is one of the reason why the pseudo-discount factor parametrization is the most often used}
     
         \subsection{Possible Description through Forward Rates} \label{subsection:1.1.1}
-        Each rate curve $C_{x}$ of the framework is a forwarding curve linked to a specific tenor $x$. The most natural parametrization should be the one that models directly forward rates because the market quotes forward rates (and not other quantities like discount factors). Forward rates directly quoted by the market through FRA, Futures and indirectly through Interest Rates Swaps and Basis Swaps, are simple forward rates corresponding to a triplet $(s,s+x,\tau_{x})$ where $s\geq t$ and $\tau_{x}$ is the specific day count convention related to the underlying index of each instrument (example: Euribor $xM$). So our curve $C_{x}$ should be described by:
+        Each rate curve $C_{x}$ is a forwarding curve linked to a specific tenor $x$. The most natural parametrization should be the one that models directly forward rates because the market quotes forward rates (and not other quantities like discount factors). Forward rates directly quoted by the market through FRA, Futures and indirectly through Interest Rates Swaps and Basis Swaps, are simple forward rates corresponding to a triplet $(s,s+x,\tau_{x})$ where $s\geq t$ and $\tau_{x}$ is the specific day count convention related to the underlying index of each instrument (example: Euribor $xM$). So our curve $C_{x}$ should be described by:
         $$C_{x}(t)=\{s\rightarrow F_{x}(t;s,s+x)|s\geq t\}$$
         Unfortunately, this is not the commonly used approach.
         
@@ -166,41 +166,53 @@ This first chapter wants to outline the most important issues concerning rate cu
         $$F_{x}(t;s_{1},s_{2})=\frac{1}{\tau(s_{1},s_{2})}\left(\frac{P_{x}(t;s_{1})}{P_{x}(t;s_{2})}-1\right)$$\\
         
         In the old Single-Curve World this relationship was a result of a no-arbitrage condition which does not hold anymore but now, in a Multi-Curve System, this is merely the definition of a {\it pseudo-discount factors} function $P_{x}(t;s)$.\\
-        To clarify this concept we can make the following example. In the old Single-Curve world, before 2007 crisis, in the EUR market we could calculate the forward rate $F(t;t+3M,t+6M)$ starting from the values $P(t;t+3M)$ and $P(t;t+6M)$ deduced from Euribor $3M$ and Euribor $6M$ fixings with a no arbitrage condition; the resulting value was in line with the market quote of the $3X6$ FRA. With the large Basis Swap spreads presently quoted on the market this relation is no more valid: if we calculate the $3X6$ FRA implicit in Euribor 6M and Euribor 3M fixings (as explained above) we do not obtain the $3X6$ FRA quoted by the market (see Figure \ref{fig:basisafter}).
-        The discussion above has proved that for each forward curve $C_{x}$ we have the following alternative (almost equivalent) descriptions:
+        To clarify this concept let's make the following example. In the old Single-Curve world, before 2007 crisis, in the EUR market it was possible to could calculate the forward rate $F(t;t+3M,t+6M)$ starting from the values $P(t;t+3M)$ and $P(t;t+6M)$ deduced from Euribor $3M$ and Euribor $6M$ fixings with a no arbitrage condition; the resulting value was in line with the market quote of the $3X6$ FRA. With the large Basis Swap spreads presently quoted on the market this relation is no more valid: if we calculate the $3X6$ FRA implicit in Euribor 6M and Euribor 3M fixings (as explained above) we do not obtain the $3X6$ FRA quoted by the market (see Figure \ref{fig:basisafter}).
+        The discussion above has proved that for each forward curve $C_{x}$ exist three alternative descriptions :
         
         $$C_{x}(t)=\{s\rightarrow P_{x}(t;s)|s\geq t\}$$
         $$C_{x}(t)=\{s\rightarrow z_{x}(t;s)|s> t\}$$
         $$C_{x}(t)=\{s\rightarrow f_{x}(t;s)|s> t\}$$
         
-        The advantage of the pseudo-discount factor description (compared to a direct forward rates description) is that, as already mentioned, they are well defined for $t=0$. On the other hand the drawbacks are obvious. First of all, you are not modelling directly the market quantities, the ones on which we have some intuition (the forward rates). Secondly the function $P_{x}(t,s)$ has an arbitrary part of length $x$ that must be chosen. When $x=ON$ this arbitrary part is really small (few days) and it can be fixed with some market quotes. So in this case we can use the pseudo-discount factors description without problems at all and is also consistent with the role of $C_{ON}$ as discount curve of the framework (in this case pseudo-discount factors are real discount factors!). For the other tenors we will have to introduce synthetic deposits in order to manage this arbitrariness. However, the description of synthetic deposits is outside this work's objectives.
+        The advantage of the pseudo-discount factor description (compared to a direct forward rates description) is that, as already mentioned, they are well defined for $t=0$. On the other hand the drawbacks are obvious. First of all, it implies to not model directly the market quantities. Secondly the function $P_{x}(t,s)$ has an arbitrary part of length $x$ that must be chosen. When $x=ON$ this arbitrary part is really small (few days) and it can be fixed with some market quotes. So in this case we can use the pseudo-discount factors description without problems at all and is also consistent with the role of $C_{ON}$ as discount curve of the framework (in this case pseudo-discount factors are real discount factors!). For the other tenors it is necessary to introduce synthetic deposits in order to manage this arbitrariness. However, the description of synthetic deposits is outside this work's objectives.
         
     \section{Calibration Algorithms} \label{section:1.2}
-    Pricing of all interest rate derivatives requires modelling the future dynamics of the zero rates (or yield) curve term structure. A key point to understand is that finding the best way to build the rates term structure is crucial in order to obtain reasonable price, since an incorrect one will fail to produce them. The aim to which we have to be targeted on when calibrating an yield curve is to minimize, or eliminated, repricing errors especially on the most liquid instruments that are the one preferred for calibration as it will be discussed in \ref{section:2.1}.
+    Pricing of all interest rate derivatives requires modelling the future dynamics of the zero rates (or yield) curve term structure. A key point to understand is that finding the best way to build the rates term structure is crucial in order to obtain reasonable prices, since an incorrect one will fail to produce them. The aim to which we have to be targeted on when calibrating an yield curve is to minimize, or eliminated, repricing errors especially on the most liquid instruments that are the one preferred for calibration as it will be discussed in \ref{section:2.1}.
     In order to fulfil our task of error minimization there are different ways that can be divided into 2 main classes that, as a common condition, both require a set of $N$ pre-selected market instruments:
     \begin{itemize}
         \item Best-Fit Algorithm
         \item Exact-Fit Algorithm
     \end{itemize}
+       
         \subsection{Best Fit Algorithm} \label{subsection:1.2.1}
-        A {\it best-fit algorithm} assumes a functional form for the curve $\{C_{x}\}$ and calibrates its parameters using the pre-selected instruments. It is very popular due to the smoothness of the output curve, calibration easiness and intuitive financial interpretation but it has a big drawback: usually there are more instruments than parameters and this lead to a relevant problem consisting in an imperfect reprice of the whole set of instruments. The merely fact that a best-fit calibration minimize instead of eliminate repricing errors means that this kind of algorithm are not good enough for trading purposes in liquid markets, where the market's deepness and the Bid/Ask spread closeness implies that a basis point quarter can make the difference.
+        A {\it best-fit algorithm} assumes a functional form for the curve $\{C_{x}\}$ and calibrates its parameters using the pre-selected instruments. It is very popular due to the smoothness of the output curve, calibration easiness and intuitive financial interpretation but it has a big drawback: usually there are more instruments than parameters and this lead to a relevant problem consisting in an imperfect reprice of the whole set of instruments. The merely fact that a best-fit calibration minimize instead of eliminate repricing errors means that this kind of algorithm are not good enough for trading purposes in liquid markets, where the Bid/Ask spread closeness implies that a basis point quarter can make the difference.
+        
         \subsection{Exact Fit Algorithm} \label{subsection:1.2.2}
         {\it Exact-fit algorithms}, instead, fix the yield curve on a time grid of $N$ points (or {\it pillars}) in order to exactly reprice the selected instruments. To do that, An interpolation method is required to determine curve values between pillars. Usually the algorithm is incremental, building the curve step-by-step with the increasing maturity of the ordered instruments ({\it bootstrap} approach).\\
         The set of bootstrapping instruments defines the time grid used for bootstrapping: each pillar is the maturity date or the last relevant date of the corresponding instrument.
-        The interpolation method is strictly connected to the bootstrap and plays a fundamental role also during bootstrapping and not just after that. The "pillar-to-pillar" calibration proceeds with incomplete information; so, in order to determine each pillar value, the already bootstrapped part of the curve has to be used and, in particular, both pillar and intermediate interpolated values. This is the reason why we need to interpolate during the bootstrap algorithm and it also explain why this process is iterative. In fact, if the algorithm determines next pillar value taking advantage of the pre-bootstrapped part of the curve, it is straightforward that this value is influenced by it. Since including a pillar means add new information concerning the curve dynamic, if we use a {\it global interpolation scheme}, this tends to alter the first curve part shape (as it will be discussed in ....). This is usually remedied by cycling in iterative fashion: after a first bootstrap the resulting complete grid is altered one pillar at time using again the same bootstrapping algorithm, until convergence is reached (see "haganwest" for a practical example of this interaction between interpolation and bootstrap).\\
-        Clearly, this kind of algorithms are more accurate; henceforward we restrict the analysis to the exact curve calibration problem.
+        The interpolation method is strictly connected to the bootstrap and plays a fundamental role also during bootstrapping and not just after that. The "pillar-to-pillar" calibration proceeds with incomplete information; so, in order to determine each pillar value, the already bootstrapped part of the curve has to be used and, in particular, both pillar and intermediate interpolated values. This is the reason why we need to interpolate during the bootstrap algorithm and it also explain why this process is iterative. In fact, if the algorithm determines next pillar value taking advantage of the pre-bootstrapped part of the curve, it is straightforward that this value is influenced by it. Since including a pillar means add new information concerning the curve dynamic, if a {\it global interpolation scheme} is used, this tends to alter the first curve part shape (as it will be discussed in \ref{subsection:1.3.1}). This is usually remedied by cycling in iterative fashion: after a first bootstrap the resulting complete grid is altered one pillar at time using again the same bootstrapping algorithm, until convergence is reached (see \cite{haganwest} for a practical example of this interaction between interpolation and bootstrap).\\
+        Clearly, this kind of algorithms are more accurate; henceforward the analysis will be restricted to the exact curve calibration problem.
+   
     \section{Interpolation Techniques} \label{subsection:1.3}
     Whatever parametrization and algorithm has been chosen, an interpolation for off-grid dates/times is needed. An interpolation technique always work with two distinct objects:
     \begin{description}
         \item{-} the quantity to be interpolated;
         \item{-} the interpolation scheme.
     \end{description}
-    The quantity to be interpolated is chosen according to curve's description. If we use a description through forward rates, the most reasonable quantity to be interpolated is the forward rate itself: in this way interpolation schemes and constraints can be imposed directly on market quantities. If we have to use a description through pseudo-discount factors (and this is our case as discuss in ....) we have the following main choices: discount factors, zero rates, instantaneous forward rates. In particular discount factors have exponential decay; so it makes sense to interpolate on log-discounts. Before analyzing the different impact of different choices on curve smoothness we have to introduce the interpolation scheme concept. 
+    The quantity to be interpolated is chosen according to curve's description. If a forward rates description is used, the most reasonable quantity to be interpolated is the forward rate itself: in this way interpolation schemes and constraints can be imposed directly on market quantities. If, instead, a pseudo-discount factors description is used (and this is our case as it will be discussed in \ref{subsection:1.3.1}), the following main choices can be chosen:
+    
+     \begin{itemize}
+         \item Discount factors;
+         \item Zero rates;
+         \item Instantaneous forward rates.
+     \end{itemize}
+   
+    In particular discount factors have exponential decay and this characteristic can leads to excess of convexity; so it makes sense to interpolate on log-discounts to ensure a smoother decay. Before analyzing the different impact of different choices on curve smoothness it is necessary to introduce the interpolation scheme concept. 
+        
         \subsection{Local scheme Vs. Global scheme} \label{subsection:1.3.1}
-        We can group all interpolation techniques into 2 different classes:\\
+        All interpolation techniques can be grouped together into two different classes:\\
         \begin{itemize}
-        \item{\bfseries Local scheme}: each intermediate point depends only on its bracketing pillars. Notice that when bootstrapping with a local interpolation the curve's shape between two calibrated pillars can no longer change. This kind of scheme use only $\{y\ped{i}\}$ near $\{t\ped{i}\}$ to calculate each $\{y'\ped{i}\}$ and a typical example is the linear interpolation.
-        \item{\bfseries Global scheme}: each intermediate point depends on points outside the interval defined by its neighborhoods pillars. If the interpolation method is global, the curve changes continuously until the end of the procedure because the shape of the part of the curve already bootstrapped is altered by the addition of further pillars as stressed in ..... Cubic spline are the most common examples of global interpolations that are fully defined when function values $\{y\ped{i}\}$ at point $\{t\ped{i}\}$ are supplemented with function first derivatives values $\{y'\ped{i}\}$.\\
+        \item{\bfseries Local scheme}: With a local scheme each intermediate point depends only on its bracketing pillars. Notice that when bootstrapping with a local interpolation the curve's shape between two calibrated pillars can no longer change. This kind of scheme use only $\{y\ped{i}\}$ near $\{t\ped{i}\}$ to calculate each $\{y'\ped{i}\}$ and a typical example is the linear interpolation.
+        \item{\bfseries Global scheme}: Conversely, with global scheme, each intermediate point depends on points outside the interval defined by its neighborhoods pillars. If the interpolation method is global, the curve changes continuously until the end of the procedure because the shape of already bootstrapped part of the curve is altered by the addition of further pillars. Cubic spline are the most common examples of global interpolations that are fully defined when function values $\{y\ped{i}\}$ at point $\{t\ped{i}\}$ are supplemented with function first derivatives values $\{y'\ped{i}\}$.\\
         \end{itemize}
         
         \begin{figure}[!h]
@@ -212,23 +224,19 @@ This first chapter wants to outline the most important issues concerning rate cu
         
         \newpage
         The criteria used to analyse the interpolation techniques usually fall into one of the following two categories:
-        \begin{itemize}
-        \item the quality of the forward rates: in this case we are looking at the curve as an "accounting" tool and we are trying to answer the question "How good the forward rates look?"; 
-        \item the quality of the implied hedging strategies: in this case we are looking at the curve as a "risk management" tool and we are trying to answer the question "Are the implied hedging quantities reasonable and stable?"
-        \end{itemize}
-        Sometimes an interpolation method is good to build forward rates but not good from an hedging point of view (This is the case of cubic spline). Since we are not interested to discuss the implementation of hedging curve we will restrict our analysis focusing on the object of building high quality forward rates.
-        We now menage all requirements to introduce and discuss some of the most popular interpolation techniques (i.e. quantity to be interpolated plus an interpolation scheme) stressing on every pros and cons.\\
-        Since each simple forward rate is approximately the integral of instantaneous forward rates, we will analyze the smoothness of simple forward rates computing instantaneous forward rates. The starting point is a set of known curve's points $\left\{ (t_{i},y_{i}=y(t_{i}))\right\}_{i=1,...,N}$ where $y$ represent the quantity to be interpolated as defined above. $t_{0}$ will be the reference date.
-        \subsection{Linear and Log-Linear interpolation} \label{subsection:1.3.2}
-        This is a poor and simple way to interpolation that can be computed directly on zero rates (Linear) or on log-discounts (log-linear). For $t \in [t_{i-1}, t_{i}]$ the piecewise linear interpolation formula for zero rates is: $$z(t)t=\frac{t-t_{i-1}}{t_{i}-t_{i-1}}z(t_{i})t+\frac{t_{i}-t}{t_{i}-t_{i-1}}z(t_{i-1})t$$
-        This kind of interpolation techniques produces the so called: "Sawtooth forward rates" as visible in Figure \ref{fig:piecewiselinear} and Figure \ref{fig:sawtooth}:
         
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/piecewiselinear.png}
-        \caption{Piecewise linear interpolation on forward rates on Euribor 6M curve.}
-        \label{fig:piecewiselinear}
-        \end{figure}
+        \begin{itemize}
+        \item the quality of the forward rates: in this case the output curve is an "accounting" tool that wants to produce smooth forward rates; 
+        \item the quality of the implied hedging strategies: in this case the output curve is a "risk management" tool that tries to produce reasonable and stable implied hedging quantities.
+        \end{itemize}
+        
+        Sometimes an interpolation method is good to build forward rates but not good from an hedging point of view (This is the case of cubic spline). Since the implementation of hedging curve is not a target of this thesis, the analysis will be restricted on building high quality forward rates and so the best interpolation technique will be the one which is able to produce the best forward rates in terms of smoothness.
+        All requirements to present some of the most popular interpolation techniques (i.e. quantity to be interpolated plus an interpolation scheme) have been discussed; let's introduce them stressing on every pros and cons.\\
+        Since each simple forward rate is approximately the integral of instantaneous forward rates, the smoothness of simple forward rates will be analyzed computing instantaneous forward rates. The starting point is a set of known curve's points $\left\{ (t_{i},y_{i}=y(t_{i}))\right\}_{i=1,...,N}$ where $y$ represent the quantity to be interpolated as defined above. $t_{0}$ will be the reference date.
+        
+        \subsection{Linear and Log-Linear interpolation} \label{subsection:1.3.2}
+        This is a poor and simple way to interpolate that can be computed directly on zero rates (Linear) or on log-discounts (log-linear). For $t \in [t_{i-1}, t_{i}]$ the piecewise linear interpolation formula for zero rates is: $$z(t)t=\frac{t-t_{i-1}}{t_{i}-t_{i-1}}z(t_{i})t+\frac{t_{i}-t}{t_{i}-t_{i-1}}z(t_{i-1})t$$
+        This kind of interpolation techniques produces the so called: "Sawtooth forward rates" as visible in Figure \ref{fig:sawtooth} and Figure \ref{fig:piecewiselinear}:
         
         \begin{figure}[!h]
         \centering
@@ -237,12 +245,27 @@ This first chapter wants to outline the most important issues concerning rate cu
         \label{fig:sawtooth}
         \end{figure}
         
-        Obviously, this is not a good way to interpolate; forward rates are far to be smooth and curve shape is quite improbable.\\
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/piecewiselinear.png}
+        \caption{Piecewise linear interpolation on forward rates for Euribor 6M curve.}
+        \label{fig:piecewiselinear}
+        \end{figure}
+        
+        \newpage
+        Obviously, this is not a good way to interpolate quantitites; forward rates are far to be smooth and curve shape is quite improbable.\\
         In the log-discount case, instead, we have the formula:\\
         \\
         $$z(t)t=-\ln P(t)=-\frac{t-t_{i-1}}{t_{i}-t_{i-1}}\ln P(t_{i})-\frac{t_{i}-t}{t_{i}-t_{i-1}}\ln P(t_{i-1})$$\\
         \\
-        In this case the output is the so called: "Stepped curve" as visible in Figure \ref{fig:piecewiseflat} and Figure \ref{fig:stepped}. The result is not better than the one obtained with the linear interpolation on zero rates. Nevertheless this method is more popular because that it can be used to describe the first section of overnight-related curves; In fact, market evidence shows that short rates tend to be constant (flat) between particular dates, namely the ones in which there is a European Central Bank monetary policy board meeting. Therefore, the overnight curve case is a particular one in which curve smoothness is a requirement not strictly recommended before the last ECB meeting date published (usually maximum 2 year forward) but returns to be important after it. In this situation using a piecewise flat interpolation or a cubic one for the whole curve might be not accurate in both cases and so we need a merger of both interpolation techniques which leads to the so called: "Mixed interpolation" that will be treated in .....\\
+        In this case the output is the so called: "Stepped curve" as visible in Figure \ref{fig:stepped} and Figure \ref{fig:piecewiseflat}. 
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/stepped.png}
+        \caption{An example of stepped Euribor 6M curve.}
+        \label{fig:stepped}
+        \end{figure}
         
         \begin{figure}[!h]
         \centering
@@ -252,12 +275,7 @@ This first chapter wants to outline the most important issues concerning rate cu
         \end{figure}
         
         \newpage
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/stepped.png}
-        \caption{An example of stepped Euribor 6M curve.}
-        \label{fig:stepped}
-        \end{figure}
+        The result is not better than the one obtained with the linear interpolation on zero rates. Nevertheless this method is more popular because it can be used to describe the first section of overnight-related curves; In fact, market evidence shows that short rates tend to be constant (flat) between particular dates, namely the ones in which there is a European Central Bank monetary policy board meeting. Therefore, the overnight curve case is a particular one in which curve smoothness is a requirement not strictly recommended before the last ECB meeting date published (usually maximum 2 year forward) but returns to be important after it. In this situation using a piecewise flat interpolation or a cubic one for the whole curve might be not accurate in both cases and so we need a merger of both interpolation techniques which leads to the so called: "Mixed interpolation" that will be treated in \ref{section:3.1}. \\
         
         \subsection{Constrained Cubic Spline interpolation: The Kruger Scheme} \label{subsection:1.3.3}
         Traditional cubic spline interpolation methods describe the unknown function $f$ as a collection of $N-1$ spline functions $f_{i}$ ($i=1,...,N-1$), each one defined on the interval $[t_{i},t_{i+1}]$ through the following criteria:
@@ -277,24 +295,25 @@ This first chapter wants to outline the most important issues concerning rate cu
         \end{itemize}
         The first equation give us $4N-4$ unknown parameters; the other equations give us $2(N-1)+(N-2)+(N-2)=4N-6$ equations. The two remaining equations are based on a border conditions for the starting and ending points. If we choose the following conditions:
         $$f^{\prime\prime}_{1}(t_{1})=f^{\prime\prime}_{N-1}(t_{N})=0$$
-        the resulting spline is called {\it Natural Spline}.\\
-        These interpolation methods suffer of well-documented problems, such as spurious inflection points, excessive convexity, lack of locality and wide oscillations (the spline only alleviates the problem of oscillation seen when fitting a single polynomial). We present now the method of Kruger (cite Kruger) which combines the smooth curve characteristics of spline interpolation with non-overshooting behaviour of linear interpolation.\\
-        A Constrained Cubic Spline is constructed using previous equations and replacing the second order derivative at every point with:
+        the resulting spline is called {\it Natural Spline}. These interpolation methods suffer of well-documented problems, such as spurious inflection points, excessive convexity, lack of locality and wide oscillations (the spline only alleviates the problem of oscillation seen when fitting a single polynomial). \\
+        The Kruger's method (see \cite{kruger}), which combines the smooth curve characteristics of spline interpolation with non-overshooting behaviour of linear interpolation, is now presented. A Constrained Cubic Spline is constructed using previous equations and replacing the second order derivative at every point with:
         $$f^{\prime}_{i}(t_{i+1})=f^{\prime}_{i+1}(t_{i+1})=f^{\prime}(t_{i+1})$$
-        for $i=1,...,N-2$ where $f^{\prime}(t_{i+1})$ is a specified first order derivative. The result is an interpolated function less smooth but with a specific slope at every point. Intuitively we know the slope of the spline will be between the slopes of the adjacent straight lines. If we define:
+        for $i=1,...,N-2$ where $f^{\prime}(t_{i+1})$ is a specified first order derivative. The result is an interpolated function less smooth but with a specific slope at every point. Intuitively, the spline's slope will be between the slopes of the adjacent straight lines. Defining:
+        
         $$
         S_{i}=\frac{y_{i+1}-y_{i}}{t_{i+1}-t_{i}}
         $$
+        
         a good choice is:
+        
         $$f^{\prime}(t_{i})=
         \begin{cases}
-        \frac{2}{\frac{1}{S_{i}}+\frac{1}{S_{i-1}}}&\text{if $S_{i}S_{i-1}\geq 0$} \\
+        \frac{2}{\frac{1}{S_{i}}+\frac{1}{S_{i-1}}}&\text{if $S_{i}S_{i-1}\geq 0$}\\
         0&\text{if $S_{i}S_{i-1}< 0$}
         \end{cases}$$
-        Note that this interpolation scheme preserves monotonicity: in regions of monotonicity of the inputs - three successive increasing or decreasing points - the interpolating function preserves this property. Maximum and minimum points are allowed only on pillars.\\
-        The effect of constrained cubic interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:constrainedzero} and \ref{fig:constrainedlog}. We can notice that the quality of forward rates is really better than the quality achieved with linear interpolation, the best effect obtained interpolating on log discount factors. The heritage of linear interpolation is evident, mainly interpolating on zero rates: the "sawtooth" forwards have become "humps". To reduce this effect the only solution is to increase the number of pillars. Often this is achieved using interpolated quotes.
         
-        \newpage
+        Note that this interpolation scheme preserves monotonicity: in regions of input's monotonicity (three successive increasing or decreasing points) the interpolating function preserves this property. Maximum and minimum points are allowed only on pillars. The effect of constrained cubic interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:constrainedzero} and \ref{fig:constrainedlog}. It is notable that the quality of forward rates is really better than the quality achieved with linear interpolation. The heritage of linear interpolation is evident, mainly interpolating on zero rates: the "sawtooth" forwards have become "humps". To reduce this effect the only solution is to increase the number of pillars and this is often achieved using interpolated quotes.\\
+        
         \begin{figure}[!h]
         \centering
         \includegraphics[width=0.7\textwidth]{images/constrainedzero.png}
@@ -310,9 +329,9 @@ This first chapter wants to outline the most important issues concerning rate cu
         \end{figure}
         
         \subsection{Monotonic Cubic Natural Spline interpolation: The Hyman Scheme} \label{subsection:1.3.4}
-        The Hyman's method or {\it Hyman filter} (cite hyman) attempts to address traditional cubic spline problems in a different way. It's a method that could be applied to any cubic interpolation scheme, for example the cubic natural spline one, to preserve monotonicity. In case of $C^{2}$ interpolation schemes the Hyman filter ensures monotonicity at the expenses of the second derivative of the interpolated function which will no longer be continuous in the points where the filter has been applied.\\
-        Let us briefly sketch how Hyman filter works. When input data are locally monotone (three successive increasing or decreasing points), if the chosen interpolating function is already monotonic, the Hyman filter leaves it unchanged preserving all of its original features, otherwise it changes the slopes locally in order to guarantee monotonicity. When the data are not locally monotone, instead, the interpolated function will have a maximum/minimum at the node. Maximum and minimum points are allowed also between pillars. \\
-        The effect of Hyman Filter applied to Cubic Natural Spline Interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:hymanzero} and \ref{fig:hymanlog}. Looking at the smoothness of forward rates, it's clear that this is the best approach from this point of view.
+        The Hyman's method or {\it Hyman filter} (see \cite{hyman}) attempts to address traditional cubic spline problems in a different way. It's a method that could be applied to any cubic interpolation scheme, for example the cubic natural spline one, to preserve monotonicity. In case of $C^{2}$ interpolation schemes the Hyman filter ensures monotonicity at the expenses of the second derivative of the interpolated function which will no longer be continuous in the points where the filter has been applied.\\
+        Let's briefly sketch how Hyman filter works. When input data are locally monotone (three successive increasing or decreasing points), if the chosen interpolating function is already monotonic, the Hyman filter leaves it unchanged preserving all of its original features (and, as a consequence, without introducing any distortion), otherwise it changes the slopes locally just enough to guarantee monotonicity. When the data are not locally monotone, instead, the interpolated function will have a maximum/minimum at the node. Maximum and minimum points are allowed also between pillars. \\
+        The effect of Hyman Filter applied to Cubic Natural Spline Interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:hymanzero} and \ref{fig:hymanlog}. Looking at the smoothness of forward rates, it's clear that this is the best approach from a forward rate smoothness point of view.
         
         \begin{figure}[!h]
         \centering
@@ -335,10 +354,11 @@ This first chapter wants to outline the most important issues concerning rate cu
 
 \chapter{Overnight Curve Definition} \label{chap:2}
 This chapter wants to focus on overnight curve construction passing through every issue outlined in Chapter \ref{chap:1}. The objective is to present a calibration best practice related on the specific overnight curve case which is the core argument of this work.
+
     \section{Instrument selection criteria} \label{section:2.1}
     Before 2007, in the Single-Curve World, fixed income pricing requires to model just one curve named the Standard Curve. This particular curve was calibrated selecting among a wide range of instruments with different tenors. Market instruments were more than needed and this permits to calibrate a curve with a high pillar density in which the only problem was to choose the best set of instruments following a liquidity criteria. \\
     The liquidity criteria implies that the major selection priority is given to the most liquid instruments available on the market. This principle is followed because instrument's liquidity is due to the trade volume. The more an instrument is traded and the more his value tends to be fair because of market efficiency. The bootstrap algorithm must be fed only with fair quotes, which vehicle the most efficient information, in order to calibrate a fair curve. It is strictly not recommended to bootstrap illiquid quotes in order to bootstrap market efficient information instead of market noise. \\
-    Since the beginning of the Multi-Curve World, the curve selection criteria become more difficult due to the fact that every curve has to be built using his specific tenor instruments. In addiction many interest rate derivatives have become illiquid and the wide range of market quotes has decreased dramatically. The present multi-curves have a far less pillar density compared to the old standard one (this is the reason why synthetic deposits are necessary) and this limits the outcome quality. Fortunately, in the overnight case, there are many liquid instruments that can be used to cover all the curve behaviour, from the short term to the last section (usually from spot date to 60Y). In particular overnight curve is bootstrapped using the following instruments:
+    Since the beginning of the Multi-Curve World, the curve selection criteria become more difficult due to the fact that every curve has to be built using his specific tenor instruments. In addiction many interest rate derivatives have become illiquid and the wide range of market quotes has decreased dramatically. The present multi-curves have a far less pillar density compared to the old standard one (this is the reason why synthetic deposits are necessary) and this limits the outcome quality. Fortunately, in the overnight case, there are many liquid instruments that can be used to cover all the curve behaviour, from the short term to the last section (usually from spot date to 60 years). In particular overnight curve is bootstrapped using the following instruments:
     
     \begin{itemize}
     \item ON and TN Deposits in order to set the curve reference date to today's date (these instruments are not properly based on Eonia - the underlying index is the one-day tenor Euribor - thus we are introducing a very small inconsistency);
@@ -346,10 +366,10 @@ This chapter wants to focus on overnight curve construction passing through ever
     \item spot starting OIS up to 60Y.
     \end{itemize}
     
-    The ECB OIS are more liquid than spot starting OIS and this is way we always use them when available. However, introducing forward start ECB OIS leads to a overlapping instruments problem that can be fixed using a forward Stub, as it will be discussed in \ref{section:3.2}. Next section will describe in detail this kind of instruments.
+    The ECB OIS are more liquid than spot starting OIS and this is way they are always used when available. However, introducing forward start ECB OIS leads to a overlapping instruments problem that can be fixed using a forward Stub, as it will be discussed in \ref{section:3.2}. Next section will describe in detail this kind of instruments.
     
         \subsection{Overnight Deposits} \label{subsection:2.1.1}
-        \textit{Interbank Deposits} are unsecured loans made by a bank to another bank. \textit{Deposits} are standard money market zero coupon contracts, where the \textit{Lender} pays at start day (\textit{settlement day}) a notional amount $N$ to the \textit{Borrower} and he receives back the notional amount $N$ plus the interest earned over the period that goes from settlement date to maturity date. When we are studying \textit{Deposits} we have to take care of $3$ important dates:
+        \textit{Interbank Deposits} are unsecured loans made by a bank to another bank. \textit{Deposits} are standard money market zero coupon contracts, where the \textit{Lender} pays at start day (\textit{settlement day}) a notional amount $N$ to the \textit{Borrower} and he receives back the notional amount $N$ plus the interest earned over the period that goes from settlement date to maturity date. The \textit{Deposits} description have to take care of $3$ important dates:
         
         \begin{itemize}
         \item \textit{Fixing date} ($t_{0}^F$) or today: the date in which we fix the interest rate that will be applied on our \textit{Deposit};
@@ -363,23 +383,29 @@ This chapter wants to focus on overnight curve construction passing through ever
      
         Where: $\tau_{0,1}$ is the \textit{year-fraction} between $t_{0}$ and $t_{1}$.
 
-        If we want to compute the value today ($t_{0}^F$) of this \textit{Deposit} we have to discount this unique cashflow to today:
+        To compute the present value ($t_{0}^F$) of this \textit{Deposit} it is necessary to discount his unique cashflow:
      
         $$Depo_{t_{1}}(t_{0}^F) = D(t_{0}^F,t_{1})\cdot Depo_{t_{1}}(t_{1}) = N$$
      
-        since: $r_{t_{1}}^{Depo} = r_t$ (the Zero-Rate), we had: $D(t_{0}^F,t_{1}) = \frac{1}{(1+r_{t_{1}}^{Depo}\tau_{0,1})}$.\\
+        and since: 
+        
+        $$r_{t_{1}}^{Depo} = r_t \mbox{(the Zero-Rate)}$$
+        
+        the discount factor is: 
+        
+        $$D(t_{0}^F,t_{1}) = \frac{1}{(1+r_{t_{1}}^{Depo}\tau_{0,1})}$$.\\
 
-        These contracts are quoted and exchanged on the \textit{Interbank OTC (Over The Counter) market} for various currencies and maturities, that usually do not go beyond the year.However the first 2 maturities are a bit different from the others: 
+        These contracts are quoted and exchanged on the \textit{Interbank OTC (Over The Counter) market} for various currencies and maturities, that usually do not go beyond the year. However the first 2 maturities are a bit different from the others: 
         
         \begin{itemize}
         \item \textit{OverNight (ON)}: it is a \textit{Deposit} that starts today, at \textit{Fixing Date} ($t_{0}^F$), lasts for one day, and ends tomorrow ($t_{0}^F$+1);
         \item \textit{Tomorrow-Next (TN)}: this contract starts tomorrow ($t_{0}^F$+1), lasts for one day, and ends the day after tomorrow ($t_{0}^F$+2); for example in EURO market, where settlement date is today plus 2 business days, this contract starts tomorrow (the next business day after today) and ends at settlement date.
         \end{itemize}
         
-        After that we have \textit{Spot-Next (SN)} that is a regular contract: starts at \textit{Spot Date}, or settlement date ($t_{0}$), lasts for one day, and ends the day after ($t_{0}+1$). The following \textit{Deposits} are denoted with their maturity, e.g.  $SW$ (Spot Week), $1M$ (1 Month), $3M$ (3 Months) and so on. The \textit{Business Day Convention} is \textit{Following} for maturities shorter then 1 month and \textit{Modified Following} for longer maturities.
+        After ON and TN \textit{Deposit}, there is the  \textit{Spot-Next (SN)} that is a regular contract: starts at \textit{Spot Date}, or settlement date ($t_{0}$), lasts for one day, and ends the day after ($t_{0}+1$). The following \textit{Deposits} are denoted with their maturity, e.g.  $SW$ (Spot Week), $1M$ (1 Month), $3M$ (3 Months) and so on. The \textit{Business Day Convention} is \textit{Following} for maturities shorter then 1 month and \textit{Modified Following} for longer maturities.
         
         \subsection{Interest Rate Swap {\it (IRS)}} \label{subsection:2.1.2}
-        Interest Rate Swaps (IRS) are OTC contracts in which two counter-parties agree to exchange two streams of cashflows typically tied to a floating LIBOR or EURIBOR rate, $L(t_{i-1},t_{i})$, versus a fixed rate $r^{IRS}$. IRS can be seen as a set of consecutives FRA: on a number of future dates a fixed interest rate, $r^{IRS}$, will be exchanged for a floating interest rate (LIBOR). The payments dates of the floating rate and the fixed rate can be different, in that case we still can see IRS as a portfolio of FRA, part of them with a null fixed or floating rate (those with single-direction payment). All payments are based on the same notional $N$ and are settled at the end of each period. \\
+        Interest Rate Swaps (IRS) are OTC contracts in which two counter-parties agree to exchange two streams of cashflows typically tied to a floating LIBOR or EURIBOR rate, $L(t_{i-1},t_{i})$, versus a fixed rate $r^{IRS}$. IRS can be seen as a set of consecutive FRAs; on a number of future dates a fixed interest rate, $r^{IRS}$, will be exchanged for a floating interest rate (LIBOR). The payments dates of the floating rate and the fixed rate can be different, in that case it is still possible to see IRS as a portfolio of FRAs, part of them with a null fixed or floating rate (those with single-direction payment). All payments are based on the same notional $N$ and are settled at the end of each period. \\
         An IRS is characterized by two schedule of payments, one for the floating rate, the so called \textit{floating leg}, and one for the fixed rate, the \textit{fixed leg}:
         
         \begin{itemize}
@@ -387,7 +413,8 @@ This chapter wants to focus on overnight curve construction passing through ever
         \item \textit{fixed leg dates} = $\{s_0,s_1, ... , s_m\}$;
         \end{itemize}
         
-        with: $t_0 = s_0$ and $t_n = s_m$; \\
+        with: $t_0 = s_0$ and $t_n = s_m$;\\
+        
         The coupon payoffs in one time interval, between $t_i$ and $t_{i-1}$ for the floating leg and between $s_j$ and $s_{j-1}$ for the fixed leg, evaluated at the end date of the period, are (with notation $IRS_{leg}$($evaluation$-$date$; $start$-$date$, $end$-$date$, $rate$)):
         
         \begin{align}
@@ -402,7 +429,7 @@ This chapter wants to focus on overnight curve construction passing through ever
 
         Solving for $r^{IRS}$ we can find the correct rate, called \textit{Swap fair rate}.
         
-        $$r^{IRS} = \frac{\sum_{i=1}^n (L(t_{i-1},t_i) \cdot \tau_{i-1,i}\cdot D(t_0,t_i))}{\sum_{j=1}^m (\tau_{j-1,j} \cdot D(s_0,s_j))}$$
+        $$r^{IRS} = \frac{\sum_{i=1}^n (L(t_{i-1},t_i) \cdot \tau_{i-1,i}\cdot D(t_0,t_i))}{\sum_{j=1}^m (\tau_{j-1,j} \cdot D(s_0,s_j))}$$\\
         
         A particular case of IRS are Overnight Indexed Swap (OIS) where the floating leg is tied to the overnight rate. Payments of the floating leg are not done every day, but at specific coupon dates, the fixed leg dates, and therefore the floating rate is daily compounded over that period. The fixed rate for $OIS$ is normally a simple rate with interest at maturity date, for $OIS$ shorter than 1 year, and it is an annual rate for longer maturities. \\
         The floating leg is:
@@ -412,10 +439,9 @@ This chapter wants to focus on overnight curve construction passing through ever
         Since $R^{ON}(t_{i-1},t_i)$ is daily compounded, with $M$ indicating the number of business days between $t_{i-1}$ and $t_{i}$, we have ($t_{{i-1}_{0}}=t_{i-1}$, $t_{{i-1}_{M}}=t_{i}$):
 
         $$1+R^{ON}(t_{i-1},t_i) \cdot \tau^{ON}_{i-1,i} = \prod_{k=1}^M (1 + r^{ON}(t_{{i-1}_{k-1}},t_{{i-1}_k})\tau^{ON}_{{i-1}_{k-1},{i-1}_{k}})$$
+        $$R^{ON}(t_{i-1},t_i) = \frac{1}{\tau^{ON}_{i-1,i}} \cdot \left(\prod_{k=1}^n (1 + r^{ON}(t_{{i-1}_{k-1}},t_{{i-1}_k})\tau^{ON}_{{i-1}_{k-1},{i-1}_{k}}) - 1\right)$$\\
 
-        $$R^{ON}(t_{i-1},t_i) = \frac{1}{\tau^{ON}_{i-1,i}} \cdot \left(\prod_{k=1}^n (1 + r^{ON}(t_{{i-1}_{k-1}},t_{{i-1}_k})\tau^{ON}_{{i-1}_{k-1},{i-1}_{k}}) - 1\right)$$
-
-        For determine the $r^{OIS}$ rate we proceed like a simple IRS contract. We calculate the $NPV$ of the swap and we impose that his value in $t_0$ is equal to 0. Since overnight rate is now regarded as a better proxy for the risk-free rate than the LIBOR, we can use it even for discounting; therefore:
+        For determine the $r^{OIS}$ rate we proceed like a simple IRS contract. We calculate the $NPV$ of the swap and we impose that his value in $t_0$ is equal to 0. Since overnight rate is now regarded as a better proxy for the risk-free rate than the LIBOR, it can be used even for discounting; therefore:
 
         $$\sum_{i=1}^n (R^{ON}(t_{i-1},t_i) \cdot \tau^{ON}_{i-1,i}\cdot D(t_0,t_i)) = \sum_{i=1}^n (D(t_0,t_{i-1}) - D(t_0,t_i))$$\\
         $$= 1 - D(t_0,t_n)$$
@@ -438,10 +464,10 @@ This chapter wants to focus on overnight curve construction passing through ever
 \chapter{Improving Overnight Curve} \label{chap:3}
     \section{Mixed Interpolation}\label{section:3.1}
     \section{Forward Stub for overlapping Instruments} \label{section:3.2}
-    This section is devoted to the presentation and solution of a particular ON curve problem due to the manage of the first ECB dated OIS. As already presented in \ref{subsection:2.1.3}, this kind of instruments are forward start OIS that must be included in the curve calibration because of their liquidity. The problem occurs because spot starting OIS maturity dates does not coincide with the settlement date of the first ECB OIS and this leads to a situation in which there are two solutions but either of them produces good results:
+    This section is devoted to the presentation and solution of a particular overnight curve (from now ON) problem due to the manage of the first ECB dated OIS. As already presented in \ref{subsection:2.1.3}, this kind of instruments are forward start OIS that must be included in the curve calibration because of their liquidity. The problem occurs because spot starting OIS maturity dates does not coincide with the settlement date of the first ECB OIS and this leads to a situation in which there are two solutions but either of them produces good results:
     
      \begin{itemize}
-         \item{} A possibility is to include all spot starting OIS taking no care of the fact that certainly one of them will have an overlapping maturity date with the forward start ECB OIS. This solution's benefit is that the ON curve will be totally covered because the bootstrap algorithm can manage a sequence of maturities which permits a "pillar-to-pillar" standard bootstrap. Otherwise this choice implies that there will be a short time-frame presenting overlapping instruments as visible in Figure \ref{fig:overlapping}.
+         \item{} A possibility is to include all spot starting OIS taking no care of the fact that certainly one of them will have an overlapping maturity date with the forward start ECB OIS (expect for the lucky case in which a spot starting OIS maturity coincides with the ECB dates OIS settlement but this is an exception and not the rule). This solution's benefit is that the ON curve will be totally covered because the bootstrap algorithm can manage a sequence of maturities which permits a "pillar-to-pillar" standard bootstrap. Otherwise this choice implies that there will be a short time-frame presenting overlapping instruments as visible in Figure \ref{fig:overlapping}.
          
         \begin{figure}[!h]
         \centering
@@ -449,8 +475,8 @@ This chapter wants to focus on overnight curve construction passing through ever
         \caption{The overlapping solution using 2 February 2016 values.}
         \label{fig:overlapping}
         \end{figure}
-        
-        The example shows that OIS with 2-month maturity ({\it 4 April 2016}) overlaps the first ECB OIS with settlement ({\it 16 March 2016}). This 18 days year fraction cause oscillations in the curve's shape and, as a consequence, an impact on not included instruments repricing errors. This errors are also deeply connected to the first section curve's shape; in fact this solution may leads negligible repricing errors only if spot starting OIS and first ECB OIS presents close values (which means that the first curve section tends to be flat). Otherwise, empirical evidence shows that, sometimes, market idiosyncrasies can affect first section curve's shape making it highly downward/upward sloping (as the Figure \ref{fig:overlapping} suggest). In this particular cases also the overlapping solution fails leading to relevant errors as it will be shown in \ref{subsection:3.2.2}.
+
+        The example shows that OIS with 2-month maturity ({\it 4 April 2016}) overlaps the first ECB OIS with settlement ({\it 16 March 2016}). This 18 days year fraction cause oscillations in the curve's shape and, as a consequence, an impact on not included instruments repricing errors. This errors are also deeply connected to the first section curve's shape; in fact this solution may leads to negligible repricing errors only if spot starting OIS and first ECB OIS presents close values (which means that the first curve section tends to be flat). Otherwise, empirical evidence shows that, sometimes, market idiosyncrasies can affect first section curve's shape making it highly downward/upward sloping (as the Figure \ref{fig:overlapping} suggest). In this particular cases also the overlapping solution fails leading to relevant errors as it will be shown in \ref{subsection:3.2.2}.
         
         \item{} Another possible solution may be to exclude from the bootstrap the overlapping OIS (the 2-month maturity one in reference to the preceding example). The benefit of this choice is to avoid overlapping instruments but implies that there will be a not covered curve section, as visible in Figure \ref{fig:exclude}, in which the bootstrap algorithm does not have any information related to the curve shape. The impact of this solution on repricing errors is very bad and so it is not advisable to use it. 
         
@@ -672,6 +698,13 @@ This devoted to introduce some basic and fundamental interest rate rule in order
 %%%BIBLIOGRAPHY%%%
 
 \begin{thebibliography}{9}
+
+\bibitem{haganwest} P.H.~Hagan, G. ~West, {\em Interpolation methods for curve construction}, Applied Mathematical Finance, 13(2):89-129, June 2006.\\
+
+\bibitem{kruger} CJC ~Kruger, {\em Constrained cubic spline interpolation for chemical engineering applications}, http://www.korf.co.uk/spline.pdf.\\
+
+\bibitem{Hym} J.M.~Hyman, {\em Accurate monotonicity preserving cubic interpolation}, SIAM Journal on scientific and statistical computing, 4(4):645-654, 1983.\\
+
 \end{thebibliography}
 
 \end{document}
