@@ -212,7 +212,7 @@ This first chapter wants to outline the most important issues concerning rate cu
         All interpolation techniques can be grouped together into two different classes:\\
         \begin{itemize}
         \item{\bfseries Local scheme}: With a local scheme each intermediate point depends only on its bracketing pillars. Notice that when bootstrapping with a local interpolation the curve's shape between two calibrated pillars can no longer change. This kind of scheme use only $\{y\ped{i}\}$ near $\{t\ped{i}\}$ to calculate each $\{y'\ped{i}\}$ and a typical example is the linear interpolation.
-        \item{\bfseries Global scheme}: Conversely, with global scheme, each intermediate point depends on points outside the interval defined by its neighborhoods pillars. If the interpolation method is global, the curve changes continuously until the end of the procedure because the shape of already bootstrapped part of the curve is altered by the addition of further pillars. Cubic spline are the most common examples of global interpolations that are fully defined when function values $\{y\ped{i}\}$ at point $\{t\ped{i}\}$ are supplemented with function first derivatives values $\{y'\ped{i}\}$.\\
+        \item{\bfseries Global scheme}: Conversely, with global scheme, each intermediate point depends on points outside the interval defined by its neighborhoods pillars. If the interpolation method is global, the curve changes continuously until the end of the procedure because the shape of already bootstrapped part of the curve is altered by the addition of further pillars. Cubic spline are the most common examples of global interpolations that are fully defined when function values $\{y\ped{i}\}$ at point $\{t\ped{i}\}$ are supplemented with function first derivatives values $\{y'\ped{i}\}$.
         \end{itemize}
         
         \begin{figure}[!h]
@@ -222,7 +222,6 @@ This first chapter wants to outline the most important issues concerning rate cu
         \label{fig:scheme}
         \end{figure}
         
-        \newpage
         The criteria used to analyse the interpolation techniques usually fall into one of the following two categories:
         
         \begin{itemize}
@@ -236,7 +235,7 @@ This first chapter wants to outline the most important issues concerning rate cu
         
         \subsection{Linear and Log-Linear interpolation} \label{subsection:1.3.2}
         This is a poor and simple way to interpolate that can be computed directly on zero rates (Linear) or on log-discounts (log-linear). For $t \in [t_{i-1}, t_{i}]$ the piecewise linear interpolation formula for zero rates is: $$z(t)t=\frac{t-t_{i-1}}{t_{i}-t_{i-1}}z(t_{i})t+\frac{t_{i}-t}{t_{i}-t_{i-1}}z(t_{i-1})t$$
-        This kind of interpolation techniques produces the so called: "Sawtooth forward rates" as visible in Figure \ref{fig:sawtooth} and Figure \ref{fig:piecewiselinear}:
+        This kind of interpolation techniques produces the so called: "Sawtooth forward rates" as visible in Figure \ref{fig:sawtooth} and Figure \ref{fig:piecewiselinear}: \\
         
         \begin{figure}[!h]
         \centering
