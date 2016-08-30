@@ -330,7 +330,7 @@ This first chapter wants to outline the most important issues concerning rate cu
         \subsection{Monotonic Cubic Natural Spline interpolation: The Hyman Scheme} \label{subsection:1.3.4}
         The Hyman's method or {\it Hyman filter} (see \cite{hyman}) attempts to address traditional cubic spline problems in a different way. It's a method that could be applied to any cubic interpolation scheme, for example the cubic natural spline one, to preserve monotonicity. In case of $C^{2}$ interpolation schemes the Hyman filter ensures monotonicity at the expenses of the second derivative of the interpolated function which will no longer be continuous in the points where the filter has been applied.\\
         Let's briefly sketch how Hyman filter works. When input data are locally monotone (three successive increasing or decreasing points), if the chosen interpolating function is already monotonic, the Hyman filter leaves it unchanged preserving all of its original features (and, as a consequence, without introducing any distortion), otherwise it changes the slopes locally just enough to guarantee monotonicity. When the data are not locally monotone, instead, the interpolated function will have a maximum/minimum at the node. Maximum and minimum points are allowed also between pillars. \\
-        The effect of Hyman Filter applied to Cubic Natural Spline Interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:hymanzero} and \ref{fig:hymanlog}. Looking at the smoothness of forward rates, it's clear that this is the best approach from a forward rate smoothness point of view.
+        The effect of Hyman Filter applied to Cubic Natural Spline Interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:hymanzero} and \ref{fig:hymanlog}. Looking at the smoothness of forward rates, it's clear that this is the best approach from a forward rate smoothness point of view. \\
         
         \begin{figure}[!h]
         \centering
@@ -573,10 +573,183 @@ This chapter wants to focus on overnight curve construction passing through ever
     \section{Jumps Inclusion} \label{section:3.3}
         \subsection{The EUR market case: Positive Jumps} \label{subsection:3.3.1}
         \subsection{The GBP and USD market case: Negative Jumps} \label{subsection:3.3.2}
+        
     \section{Fed Funds Arithmetic Average Coupon OIS} \label{section:3.4}
-        \subsection{Valuation and Bootstrapping} \label{subsection:3.4.1}
-        \subsection{Hull \& White Model calibration for Convexity Adjustment estimation} \label{subsection:3.4.2} 
+    A Fed Funds arithmetic-average coupon OIS is a swap where the floating leg pays coupons corresponding to the average of daily overnight rates $L^{ON}$ over three months periods against a specific rate. Suppose to have a swap with maturity $T$, which pays the floating coupons in $\{T_p^1, T_p^2, ..., T_p^N=T \}$. Assuming $L^{ON}$ as the ON rate and $F^{ON}$ the forward ON rate, the NPV of each coupon could be written as:
+    
+    \begin{equation*}
+    \begin{split}
+    C(t_0,T_p^i) &=E^Q \bigg[D(t_0,T_p^i) \sum_{k=h}^{T_p^i} \frac{\tau(t_k,t_{k+1}) L^{ON}(t_k,t_{k+1})}{\tau(t_h,T_p)} \tau(t_h,T_p) \bigg] \\
+    &=E^Q \bigg[D(t_0,T_p^i) \sum_{k=h}^{T_p^i} \bigg( \frac{P(t_k,t_k)}{P(t_k,t_{k+1})} -1 \bigg) \bigg] \\
+    &= \sum_{k=h}^{T_p^i} E^Q \bigg[ D(t_0,T_p^i) \bigg( \frac{P(t_k,t_k)}{P(t_k,t_{k+1})} -1 \bigg) \bigg] \\
+    &= \sum_{k=h}^{T_p^i} P(t_0,T_p^i) \bigg( E^{T_p^i} \bigg[ \frac{P(t_k,t_k)}{P(t_k,t_{k+1})} \bigg] -1 \bigg)\\
+    &= \sum_{k=h}^{T_p^i} P(t_0,T_p^i) \bigg( ConvAdj(t_k) \frac{P(t_0,t_k)}{P(t_0,t_{k+1})} -1 \bigg)\\
+    &= \sum_{k=h}^{T_p^i} P(t_0,T_p^i) \bigg( ConvAdj(t_k) \bigg[1 + \tau(t_k,t_{k+1})F^{ON}(t_0,t_k,t_{k+1}) \bigg] -1 \bigg)
+    \end{split}
+    \end{equation*}
+    
+    It will be explained in the following section how to evaluate the convexity adjustment by means of an Hull-White short rate model.
+     
+        \subsection{Bootstrap methodology} \label{subsection:3.4.1}
+        Actually this kind of instruments are quoted as spread $S_T$ against USD Libor 3M, so it is possible to set the following equation:
 
+        \begin{equation*}
+        \begin{split}
+        \sum_{i=1}^{N} \tau(T_p^{i-1}, T_p^i) F^{3M}(t_0,T_p^{i-1}, T_p^i) P(t_0,T_p^i) =
+        \sum_{i=1}^{N} ( C(t_0,T_p^i) + \tau(T_p^{i-1}, T_p^i) S_T P(t_0,T_p^i) )
+        \end{split}
+        \end{equation*}
+
+        In order to use these instruments for building the USD overnight rate curve it is necessary to bootstrap this curve together with the 3M Libor forwarding curve but this implies that both curves must be bootstrapped jointly. Because this combined bootstrap could be a bit complex, suppose that swaps USD Libor 3M against fixed rate are quoted in the market. Each market quote represents the fixed rate making the two legs of the swap equal. So, it is possible to substitute the USD Libor 3M with the fixed rate of the specific swap maturing in $T$ and set the following equation: 
+
+        \begin{equation*}
+        \begin{split}
+        \sum_{i=1}^{N} \tau(T_p^{i-1}, T_p^i) R_T^{3M} P(t_0,T_p^i) = 
+        \sum_{i=1}^{N} ( C(t_0,T_p^i) + \tau(T_p^{i-1}, T_p^i) S_T P(t_0,T_p^i) )
+        \end{split}
+        \end{equation*}
+    
+        By means of the synthetic instrument above, the USD overnight curve bootstrap can be performed now using the spread $S_T$ and without the USD Libor 3M forwarding term structure. Therefore, this simplification allows a simpler bootstrap of this kind of instruments.
+        
+        \subsection{Hull \& White Model calibration for Convexity Adjustment estimation} \label{subsection:3.4.2} 
+        Suppose to use an Hull-White model to describe the implicit risk neutral Q-dynamic of the short rate. 
+        $$dr_t=\left[\theta(t)-ar_t \right]dt+\sigma dW_t$$
+        Its explicit Q-dynamic could be written as:
+        $$r_t=r_s e^{-a(t-s)} + \int_s^t e^{-a(t-u)} \theta(u) du + \sigma \int_s^t e^{-a(t-u)} dW_u$$
+        The stochastic discount factor at time t for the maturity T is simply define as $D(t,T)=e^{-\int_t^T r(u) du}$. It is possible to derive the bond price representation at time t for the maturity T, $P(t,T)=e^{-\int_t^T f(t,u) du}$ (where $f(t,u)=F(t,u,u+du)$ is the instantaneous forward rate observed in $t$) as:
+        $$P(t,T)=\exp[A(t,T)-B(t,T)r_t]$$
+        where the two terms $A(t,T)$ and $B(t,T)$ are defined as follows:
+
+        \begin{equation*}
+        \begin{split}
+        B(t,T) &= \frac{1}{a} \left[ 1-e^{-a(T-t)} \right] \\
+        A(t,T) &= \int_t^T \frac{\sigma^2}{2} B^2(u,T) du - \int_t^T \theta(u) B(u,T) du
+        \end{split}
+        \end{equation*}
+        From the previous section the risk neutral Q-dynamic of the bond price $P_t(T)=P(t,T)$ is described as:
+
+        %\begin{equation*}
+        %\begin{split}
+        %f(0,T) &= -\frac{\partial}{\partial T} ln(P(0,T)) \\
+        %&= -\frac{\partial}{\partial T} A(0,T) +
+        %\frac{\partial}{\partial T} B(0,T) r(0) \\
+        %&= -\frac{\sigma^2}{2} B^2(T,T) - 
+        %\int_0^T \frac{\sigma^2}{2} \frac{\partial}{\partial T} B^2(u,T) du \\
+        %&+ \theta(T) B(T,T) +
+        %\int_0^T \theta(u) \frac{\partial}{\partial T} B(u,T) du \\
+        %&+ \frac{\partial}{\partial T} B(0,T) r(0)
+        %\end{split}
+        %\end{equation*}
+
+        %\begin{equation*}
+        %\begin{split}
+        %f(0,T) &= e^{-aT} r(0) + \int_0^T \theta(u) e^{-a(T-u)} du \\
+        %&- \int_0^T \sigma^2 e^{-a(T-u)} \frac{1}{a} 
+        %\left[ 1-e^{-a(T-u)} \right] du \\
+        %&= e^{-aT} r(0) - \frac{\sigma^2}{2a^2} \left[ 1-e^{-aT} \right]^2 \\
+        %&+ \int_0^T \theta(u) e^{-a(T-u)} du
+        %\end{split}
+        %\end{equation*}
+
+        %Deriving in $T$: 
+
+        %\begin{equation*}
+        %\begin{split}
+        %\frac{\partial}{\partial T} f(0,T) 
+        %&= -ae^{-aT} r(0) - \frac{1}{a} \int_0^T \theta(u) e^{-a(T-u)} du \\
+        %&+ \theta(T) - \frac{\sigma^2}{a} e^{-aT} \left[ 1-e^{-aT} \right]
+        %\end{split}
+        %\end{equation*}
+
+        %Evaluating $\frac{\partial}{\partial T} f(0,T) + af(0,T) $, we obtain:
+
+        %$$\theta(T) = \frac{\partial}{\partial T} f(0,T) + af(0,T) + \frac{\sigma^2}{2a} \left[ 1-e^{-2aT} \right]$$
+        
+        \begin{equation*}
+        \begin{split}
+        dP_t(T) &= \left( \frac{\partial}{\partial t} A(t,T) - \frac{\partial}{\partial t} B(t,T) r_t \right) P_t(T) dt
+             - B(t,T) P_t(T) dr_t + \frac{\sigma^2}{2} B(t,T)^2 P_t(T) dt \\
+        dP_t(T) &= \bigg\{ \frac{\partial}{\partial t} A(t,T) - \frac{\partial}{\partial t} B(t,T) r_t -B(t,T)[\theta(t)-ar_t] +\\
+             &+ \frac{\sigma^2}{2} B^2(t,T) \bigg\} P_t(T)dt - B(t,T)P_t(T) \sigma dW_t \\
+        dP_t(T) &= \bigg\{ -\frac{\sigma^2}{2}B^2(t,T) + \theta(t)B(t,T) + [1-aB(t,T)]r_t -B(t,T)[\theta(t)-ar_t] +\\
+             &+ \frac{\sigma^2}{2}B^2(t,T) \bigg\} P_t(T) dt -B(t,T)P_t(T)\sigma dW_t \\
+        dP_t(T) &= r_t P_t(T) dt -B(t,T)P_t(T) \sigma dW_t
+        \end{split}
+        \end{equation*}
+        In order to evaluate the convexity adjustment shown in the first section, the following process must be defined:
+        $$\frac{P_t(t_k)}{P_t(t_{k+1})} = e^{A(t,t_k)-A(t,t_{k+1})-[B(t,t_k)-B(t,t_{k+1})]r_t}$$
+        From Ito's Lemma it can be derived the following Q-dynamic for the process above:
+        
+        \begin{equation*}
+        \begin{split}
+        d\left( \frac{P_t(t_k)}{P_t(t_{k+1})} \right) &= \frac{1}{P_t(t_{k+1})} dP_t(t_k) - \frac{P_t(t_k)}{P_t^2(t_{k+1})} dP_t(t_{k+1})
+        + \frac{1}{2} \bigg( 2 \frac{P_t(t_k)}{P_t^3(t_{k+1})} \bigg) dP_t^2(t_{k+1}) +\\
+        &- \frac{1}{P_t^2(t_{k+1})} dP_t(t_k) dP_t(t_{k+1}) \\
+        d\left( \frac{P_t(t_k)}{P_t(t_{k+1})} \right) &= \bigg[r_t dt -B(t,t_k) \sigma dW_t \bigg] \frac{P_t(t_k)}{P_t(t_{k+1})}
+        -\bigg[r_t dt -B(t,t_{k+1}) \sigma dW_t \bigg] \frac{P_t(t_k)}{P_t(t_{k+1})} +\\
+        &+ B^2(t,t_{k+1}) \sigma^2 \frac{P_t(t_k)}{P_t(t_{k+1})} dt
+        - B(t,t_k)B(t,t_{k+1}) \sigma^2 \frac{P_t(t_k)}{P_t(t_{k+1})} dt \\
+        d\left( \frac{P_t(t_k)}{P_t(t_{k+1})} \right) &= \sigma^2 B(t,t_{k+1}) \bigg[ B(t,t_{k+1}) - B(t,t_k) \bigg] \frac{P_t(t_k)}{P_t(t_{k+1})} dt +\\
+        &+ \sigma \bigg[ B(t,t_{k+1}) -B(t,t_k) \bigg] \frac{P_t(t_k)}{P_t(t_{k+1})} dW_t
+        \end{split}
+        \end{equation*}
+        Moving to the $T_p$-forward measure (where $T_p$ is the coupon payment date), we have $ dW_t = dW_t^{T_p} - \sigma B(t,T_p) dt $ and so the $T_p$-dynamic is:
+        
+        \begin{equation*}
+        \begin{split}
+        d\left( \frac{P_t(t_k)}{P_t(t_{k+1})} \right) 
+        &= \sigma^2 \bigg[ B(t,t_{k+1}) - B(t,T_p) \bigg] \bigg[ B(t,t_{k+1}) - B(t,t_k)\bigg] \frac{P_t(t_k)}{P_t(t_{k+1})} dt \\
+        &+ \sigma \bigg[ B(t,t_{k+1}) - B(t,t_k) \bigg] \frac{P_t(t_k)}{P_t(t_{k+1})} dW_t^{T_p}
+        \end{split}
+        \end{equation*}
+        It is then possible to evaluate the following:
+        
+        \begin{equation*}
+        \begin{split}
+        E^{T_p} \bigg[ \frac{P_t(t_k)}{P_t(t_{k+1})} \bigg] 
+        &= \frac{P_0(t_k)}{P_0(t_{k+1})} \exp \bigg\{ \int_0^t \sigma^2 \bigg[ B(s,t_{k+1}) - B(s,T_p) \bigg] \bigg[ B(s,t_k) - B(s,t_{k+1}) \bigg] ds \bigg\} \\
+        &= \frac{P_0(t_k)}{P_0(t_{k+1})} \exp \bigg\{ \frac{\sigma^2}{a^2} \int_0^t \bigg[ e^{-a(t_{k+1}-s)} - e^{-a(T_p-s)} \bigg] \bigg[ e^{-a(t_k-s)} - e^{-a(t_{k+1}-s)} \bigg] ds \bigg\}\\
+        &= \frac{P_0(t_k)}{P_0(t_{k+1})} \exp \bigg\{ \frac{\sigma^2}{a^2} \int_0^t e^{2a s} \bigg[ e^{-a t_{k+1}} -e^{-a T_p} \bigg] \bigg[ e^{-a t_k} - e^{-a t_{k+1}} \bigg] ds \bigg\}\\
+        &= \frac{P_0(t_k)}{P_0(t_{k+1})} \exp \bigg\{ \frac{\sigma^2}{2a^3} \bigg( e^{2a t} -1 \bigg) \bigg[ e^{-a t_{k+1}} -e^{-a T_p} \bigg] \bigg[ e^{-a t_k} - e^{-a t_{k+1}} \bigg] \bigg\}
+        \end{split}
+        \end{equation*}
+        
+        Therefore, the convexity adjustment $ConvAdj$ can be defined due to the delayed payment of the coupon as:
+        
+        \begin{equation*}
+        ConvAdj(t) = \exp \bigg\{ \frac{\sigma^2}{2a^3} \bigg( e^{2a t} -1 \bigg) \bigg[ e^{-a t_{k+1}} -e^{-a T_p} \bigg] \bigg[ e^{-a t_k} - e^{-a t_{k+1}} \bigg] \bigg\}
+        \end{equation*}
+        Another approach suggested in \cite{java} is to approximate the arithmetic average through the geometric one in order to use the telescoping property and simplify the computation. If $x$ is small, it is possible to set $ x = \log (1+x) + c(x)$, so, from the first section, it can be derived:
+        \begin{equation*}
+        \begin{split}
+        C(t_0,T_p^i) &=E^Q \bigg[D(t_0,T_p^i) \sum_{k=h}^{T_p^i} \tau(t_k,t_{k+1}) L^{ON}(t_k,t_{k+1}) \bigg] \\
+        &=E^Q \bigg[D(t_0,T_p^i) \sum_{k=h}^{T_p^i} \log\bigg(1+ \tau(t_k,t_{k+1}) L^{ON}(t_k,t_{k+1}) \bigg) + c(t_k) \bigg] \\
+        &=E^Q \bigg[D(t_0,T_p^i) \bigg\{\log\bigg(\prod_{k=h}^{T_p^i} 1+ \tau(t_k,t_{k+1}) L^{ON}(t_k,t_{k+1}) \bigg) + ConvAdj_1 \bigg\} \bigg] \\
+        &=E^Q \bigg[D(t_0,T_p^i) \bigg\{\log \bigg( \frac{P(t_h,t_h)}{P(t_h,T_p^i)}  \bigg) +ConvAdj_1 \bigg\} \bigg] \\
+        &= P(t_0,T_p^i) \bigg\{\log \bigg( \frac{P(t_0,t_h)}{P(t_0,T_p^i)} \bigg) +ConvAdj_1+ConvAdj_2 \bigg\}
+        \end{split}
+        \end{equation*}
+        This is the geometric approximation for the arithmetic-average coupon OIS fair rate.
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/convexity.png}
+        \caption{Convexity adjustment impact (bps) over 30Y arithemtic-average coupon OIS fair rate for different values of ($a,\sigma$). The Red point is the value for calibrated parameters (see next section).}
+        \label{fig:convexity}
+        \end{figure}
+        
+        \subsection{Model Calibration} \label{subsection:3.4.3}
+        Now that the convexity adjustment formula is defined, it is necessary to choose the parameters of the HW model (speed of mean reversion $a$ and annual volatility $\sigma$). As visible in Figure \ref{fig:convexity}, the impact of the parameters on the convexity adjustment could be not negligible.
+        A good approach could be to calibrate parameters in order to bootstrap a curve coherent with the standard compounded OIS quotes. Suppose to bootstrap an OIS curve using arithmetic-average coupon OIS without convexity (quotes from 1Y to 10Y, 12Y, 15Y, 20Y, 25Y, 30Y). Then use this curve to price fair rates of the corresponding standard compounded OIS. Comparing the results with the compounded OIS market quotes, a strip of repricing errors increasing in the maturities emerges (blue points in Figure \ref{fig:reperrors}).
+        The first idea is then to find the parameters such that the curve bootstrapped through arithmetic-average coupon OIS (using the convexity adjustment) reprices compounded OIS fair rates as good as possible but , unfortunately, this approach is computationally heavy. Another way could be instead to bootstrap an OIS curve through compounded OIS, then keeping the curve fixed, evaluate the arithmetic-average coupon OIS fair rates (using the convexity adjustment) and then look for the parameters that minimize the repricing errors between the evaluated fair rates and the market quotes. Proceeding in this way, a couple of optimal parameters can be founded. Now it is possible to bootstrap again the OIS curve through arithmetic-average coupon OIS with convexity adjustment. In Figure \ref{fig:reperrors} is shown how the compounded OIS repricing errors (red points) are minimized.\\
+        
+       \begin{figure}[!h]
+       \centering
+       \includegraphics[scale=0.5]{images/reperrors.png}
+       \caption{Compounded OIS fair rates repricing errors using a curve bootstrapped through arithmetic-average coupon OIS with convexity  adjustment (red) or not (blue).}
+       \label{fig:reperrors}
+       \end{figure}
+        
 %%%CONCLUSION%%%
 
 \chapter*{Conclusion} \label{chap:Concl}
@@ -703,6 +876,8 @@ This devoted to introduce some basic and fundamental interest rate rule in order
 \bibitem{kruger} CJC ~Kruger, {\em Constrained cubic spline interpolation for chemical engineering applications}, http://www.korf.co.uk/spline.pdf.\\
 
 \bibitem{Hym} J.M.~Hyman, {\em Accurate monotonicity preserving cubic interpolation}, SIAM Journal on scientific and statistical computing, 4(4):645-654, 1983.\\
+
+\bibitem{java} K.~Takada, {\em Valuation of Arithmetic Average of Fed Funds Rates and Construction of the US dollar Swap Yield Curve}, http://www.javaquant.net/papers/AverageIndexSwap.pdf , September 2011.\\
 
 \end{thebibliography}
 
