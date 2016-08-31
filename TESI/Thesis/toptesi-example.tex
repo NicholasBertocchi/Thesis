@@ -449,12 +449,35 @@ This chapter wants to focus on overnight curve construction passing through ever
         
         $$r^{OIS} = \frac{1 - D(t_0,t_n)}{\sum_{i=1}^n (\tau^{ON}_{i-1,i} \cdot D(t_0,t_i))}$$\\
         
-        Which is the OIS rate.
-
-        \subsection{ECB Dated OIS} \label{subsection:2.1.3}
+        Which is the OIS rate. \\
         
     \section{Calibration choices} \label{section:2.2} 
+    The construction of the $ON$-curve follows the old single curve approach. The only real difference is the selection of the instruments: as sad before, it is necessary to choose \textit{homogeneous} quoted products, based on the same underlying rate (\textit{Eonia} in this case); namely:
+    
+    \begin{itemize}
+    \item ON,TN,SN Deposits
+    \item forward EONIA OIS on ECB dates, up to 6M; they cover the time interval between two consecutive ECB Meeting dates;
+    \item OIS on EONIA from short maturity (SW,2W,..) up to 30Y, 50Y, 60Y, depending on the available quotations.
+    \end{itemize}
 
+    Note that the first three instruments are based on Euribor 1D tenor and not on EONIA; doing this, a little inconsistency is introduced. Otherwise, these deposits are useful to cover the very short term of the curve. An important property of $ON$ rates is that they are relatively constant between the Monetary Policy Meeting Dates relevant to each currency, (see \cite{ECB}); these meetings fix the short-term accommodation policy rates and overnight interest rates follow the direction of this policy. Forward $OIS$ on ECB Dates reflect these market expectations and it is very important to use them for building the first section of the curve. \\
+    The construction of the overnight curve can be divided into at least 2 section, where different approaches should be:
+    
+    \begin{itemize}
+    \item \textit{Short Dated Region}: in this region the effect of expected rate change on Meeting Dates predominates; that's why, here, empirical evidence shows a piece-wise constant curve, with possible jump behavior in rates around Meeting Dates. Rates can also show this behavior in other dates, typically at month, quarter and year ends or on dates where there are large structural flows. This behavior must be treated carefully to avoid errors and will be treated in \ref{section:3.3}.
+    \item \textit{Long Dated Region}: in this section the curve show the typical smooth behavior and so, the standard bootstrapping process can be used.
+    \end{itemize}
+    
+    This particular overnight behaviour (piece-wise constant in short region and smooth in long region) can be fixed using two different kinds of interpolations: linear on log discount and monotonic cubic natural spline on log discount \footnote{the characteristic of this mixed interpolation will be treated in \ref{section:3.1}.}. The linear one is tipically used for pricing purpose in the short term section of the curve (for example to obtain the quotation of $OIS$ up to 1-2 years) and the cubic one for discounting or long term pricing. \\
+    Figure 
+    
+    \begin{figure}[!h]
+    \centering
+    \includegraphics[width=1\textwidth]{images/ONcurve.png}
+    \caption{An example of overnight curve instrument selection which respects the criteria previously discussed.}
+    \label{fig:ONcurve}
+    \end{figure}
+    
 %\selectlanguage{english}
 %\EnableFigTabNames
 
@@ -878,6 +901,8 @@ This devoted to introduce some basic and fundamental interest rate rule in order
 \bibitem{Hym} J.M.~Hyman, {\em Accurate monotonicity preserving cubic interpolation}, SIAM Journal on scientific and statistical computing, 4(4):645-654, 1983.\\
 
 \bibitem{java} K.~Takada, {\em Valuation of Arithmetic Average of Fed Funds Rates and Construction of the US dollar Swap Yield Curve}, http://www.javaquant.net/papers/AverageIndexSwap.pdf , September 2011.\\
+
+\bibitem{ECB} {\em European Central Bank, schedules for the meetings of the Governing Council}, http://www.ecb.europa.eu/events/calendar/mgcgc/html/index.en.html.
 
 \end{thebibliography}
 
