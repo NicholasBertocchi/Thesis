@@ -144,7 +144,7 @@ This first chapter wants to outline the most important issues concerning rate cu
         \item{-} Description through Zero Rates ($z(t\ped{1})$)
         \item{-} Description through Pseudo-Discount Factors ($P(t\ped{1}$)) \footnote{For a more detailed description of Forward Rates, Zero Rates and Discount Factors see \ref{app:typesofrates}}\\
     \end{description}
-    \\
+
     Since this relationship is true:
     
     $$P(t\ped{i}) = e^{-z(t\ped{i})t\ped{i}} = e^{\int_{0}^{t\ped{i}} f\ped{inst} ds}$$
@@ -473,7 +473,7 @@ This chapter wants to focus on overnight curve construction passing through ever
     
     \begin{figure}[!h]
     \centering
-    \includegraphics[width=1\textwidth]{images/ONcurve.png}
+    \includegraphics[width=0.9\textwidth]{images/ONcurve.png}
     \caption{An example of overnight curve instrument selection which respects the criteria previously discussed.}
     \label{fig:ONcurve}
     \end{figure}
@@ -486,14 +486,14 @@ This chapter wants to focus on overnight curve construction passing through ever
 \chapter{Improving Overnight Curve} \label{chap:3}
     \section{Mixed Interpolation}\label{section:3.1}
     \section{Forward Stub for overlapping Instruments} \label{section:3.2}
-    This section is devoted to the presentation and solution of a particular overnight curve (from now ON) problem due to the manage of the first ECB dated OIS. As already presented in \ref{subsection:2.1.3}, this kind of instruments are forward start OIS that must be included in the curve calibration because of their liquidity. The problem occurs because spot starting OIS maturity dates does not coincide with the settlement date of the first ECB OIS and this leads to a situation in which there are two solutions but either of them produces good results:
+    This section is devoted to the presentation and solution of a particular overnight curve problem due to the manage of the first ECB dated OIS. This kind of instruments are forward start OIS that must be included in the curve calibration because of their liquidity. The problem occurs since spot starting OIS maturity dates,in most of the cases, does not coincide with the settlement date of the first ECB OIS and this leads to a situation in which there are two solutions but either of them produces good results:
     
      \begin{itemize}
-         \item{} A possibility is to include all spot starting OIS taking no care of the fact that certainly one of them will have an overlapping maturity date with the forward start ECB OIS (expect for the lucky case in which a spot starting OIS maturity coincides with the ECB dates OIS settlement but this is an exception and not the rule). This solution's benefit is that the ON curve will be totally covered because the bootstrap algorithm can manage a sequence of maturities which permits a "pillar-to-pillar" standard bootstrap. Otherwise this choice implies that there will be a short time-frame presenting overlapping instruments as visible in Figure \ref{fig:overlapping}.
+         \item{} A possibility is to include all spot starting OIS taking no care of the fact that certainly one of them will have an overlapping maturity date with the forward start ECB OIS (except for the lucky case in which a spot starting OIS maturity coincides with the ECB dates OIS settlement but this situation can only happens one day for each instrument). This solution's benefit is that the ON curve will be totally covered because the bootstrap algorithm can manage a sequence of maturities which permits a "pillar-to-pillar" standard bootstrap. Otherwise this choice implies that there will be a short time-frame presenting overlapping instruments as visible in Figure \ref{fig:overlapping}.
          
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.6\textwidth]{images/overlapping.png}
+        \includegraphics[width=0.7\textwidth]{images/overlapping.png}
         \caption{The overlapping solution using 2 February 2016 values.}
         \label{fig:overlapping}
         \end{figure}
@@ -510,20 +510,19 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{figure}
         
         This answers are not satisfactory and seems that there is no solution taking advantage of the only market instruments.\\
-        This work's suggestion is to create a forward "Meta-Instrument", from now called {\it Stub}, which implied value can be derived from available market quotes as it will be discussed in next section.
+        This work's suggestion is to create a forward "Meta-Instrument", from now called {\it Stub}, which value can be derived from available market quotes as it will be discussed in next section.
         
         \end{itemize}
 
         \subsection{Implied value calculation} \label{subsection:3.2.1}
-        Let's suppose now to be in the situation described in Figure \ref{fig:exclude} in which there is a not covered curve's section. The Stub quote represents a forward rate which starts from the last not-overlapping instrument's (in the previous example the OIS1M) maturity date and the first ECB Dated settlement date.\\
+        Let's suppose now to be in the situation described in Figure \ref{fig:exclude} in which there is a not covered curve's section. The Stub quote represents a forward rate which starts from the last not-overlapping instrument's (in the previous example the OIS1M) maturity date and ends in the first ECB Dated settlement date.\\
         
         \begin{figure}[!h]
         \centering
         \includegraphics[width=0.6\textwidth]{images/excluded2.png}
         \label{fig:excluded2}
         \end{figure}
-        
-        This values is implied in the market and can be derived assuming a no-arbitrage condition. In order to not introduce arbitrages, it is necessary to obtain the Stub quote imposing that it must reprice exactly the excluded instrument (OIS2M in above Figure). In order to replicate the OIS2M value the following relationship must hold:
+        The Stub forward rate is implied in the market and can be derived assuming a no-arbitrage condition. In order to not introduce arbitrages, it is necessary to obtain the Stub quote imposing that the excluded instrument must be repriced exactly (OIS2M in above Figure). In order to replicate the OIS2M value the following relationship must hold:
         
         $$e^{\int_{0}^{t\ped{1}} f_{inst}ds} \cdot e^{\int_{t\ped{1}}^{t\ped{2}} f_{inst}ds} \cdot e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds} = e^{\int_{0}^{t\ped{3}} f_{inst}ds}$$
         
@@ -539,21 +538,21 @@ This chapter wants to focus on overnight curve construction passing through ever
         \caption{The Stub solution using 2 February 2016 values.}
         \label{fig:stub}
         \end{figure}
-        
         As visible in Figure \ref{fig:stub}, no-arbitrage condition implies that investing in OIS1M ({\it blue line}), Stub ({\it violet line}) and in ECB OIS till the OIS2M maturity ({\it green line}) must be equal to investing in OIS2M ({\it orange line}). In this situation, the Stub implied value can be easily calculates as:\\
         
         $$ e^{\int_{t\ped{1}}^{t\ped{2}} f_{inst}ds} = \frac{e^{\int_{0}^{t\ped{3}} f_{inst}ds}}{e^{\int_{0}^{t\ped{1}} f_{inst}ds} \cdot e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds}} $$
         \\
         Assuming simple compounding:\\
         
-        $$ \mbox{{\it Stub}} = \frac{1+F\ped{0 x t\ped{3}} \cdot \tau\ped{0 x t\ped{3}} }{(1+F\ped{0 x t\ped{1}} \cdot \tau\ped{0 x t\ped{1}}) \cdot (1+F\ped{t\ped{2} x t\ped{3}} \cdot \tau\ped{t\ped{2} x t\ped{3}})} $$\\
-        \\
-        Introducing in the calibration this forward Stub improve consistently the ON curve goodness avoiding unwanted distortion and oscillation as will be shown in next session.
-        Otherwise, this solution can be implemented only if the bootstrap algorithm uses a log-linear interpolation for the first curve's section. Interpolating log-linearly the ON curve becomes piecewise constant, as seen in \ref{subsection:1.3.1}, and this assumption permits to derive the $e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds}$ value that must be equal to ECB OIS market quote. The good news is that, as seen in \ref{section:3.1}, the best practise to interpolate the ON curve is by means of a mixed interpolation, which interpolates log-linearly the first 2 years curve's section. \\
+        $$ \mbox{{\it Stub}} = \frac{[\frac{(1+F\ped{0 x t\ped{3}} \cdot \tau\ped{0 x t\ped{3}})}{(1+F\ped{0 x t\ped{1}} \cdot \tau\ped{0 x t\ped{1}}) \cdot (1+F\ped{t\ped{2} x t\ped{3}} \cdot \tau\ped{t\ped{2} x t\ped{3}})}-1]}{\tau\ped{t\ped{1} x t\ped{2}}}$$\\
+        
+        Introducing in the calibration this forward Stub improve consistently the overnight curve goodness avoiding unwanted distortion and oscillation as will be shown in next session. Otherwise, this solution can be implemented only if the bootstrap algorithm uses a log-linear interpolation for the first curve's section. Interpolating log-linearly the overnight curve becomes piecewise constant, as seen in \ref{subsection:1.3.1}, and this assumption permits to derive the $e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds}$ value that must be equal to ECB OIS market quote. The good news is that, as seen in \ref{section:3.1}, the best practise to interpolate the ON curve is by means of a mixed interpolation, which interpolates log-linearly the short term section of the curve. It is also important to underlying that the Stub algorithm produces good results also in limit cases as, for example, when $\tau\ped{t\ped{1} x t\ped{2}} \longrightarrow \frac{1}{365}$ that represents the particular case in which the Stub quote duration is just 1 day.\\
+        Finally, during a year, there surely happen a particular scenario in which the discarded spot instruments is the spot week (SW) OIS. This case implies that the so called "forward Stub" it is not forward start anymore because it becomes a spot instrument which value can be derived by means of the following formula:\\
+        
+         $$ \mbox{{\it Stub}} = \frac{[\frac{1+F\ped{0 x t\ped{2}} \cdot \tau\ped{0 x t\ped{2}}}{1+F\ped{t\ped{1} x t\ped{2}} \cdot \tau\ped{t\ped{1} x t\ped{2}})}-1]}{\tau\ped{t\ped{0} x t\ped{1}}}$$\\
         
         \subsection{Impact on Curve and Repricing Errors} \label{subsection:3.2.2}
-        In the previous section it has been presented a particular ON curve problem and 3 possible ways to solve it. Let's start from the worst one, namely the solution in which the overlapping instrument is excluded leaving a non-covered curve's section. With this 
-        approach the curve obtained is represented in the underlying figure:\\
+        In the previous section it has been presented a particular ON curve problem and 3 possible ways to solve it. Let's start from the worst one, namely the solution in which the overlapping instrument is excluded leaving a non-covered curve's section. With this approach the curve obtained is represented in the underlying figure:\\
         
         \begin{figure}[!h]
         \centering
@@ -572,9 +571,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \label{fig:includingcurve}
         \end{figure}
         
-        \newpage
-        As it will be shown soon this solution produces distortions due to the fact that the calibration must introduce strange oscillations in order to reprice the overlapping instrument. In fact, the Figure \ref{fig:includingcurve}, shows how the curve is pushed down till $-0.40\%$ and then turns back to the ECB OIS level. It is quite obvious that this strange curve's behaviour is not due to market quotes but to calibration's discrepancy resulting from the overlapping section.\\
-        Finally, let's present the forward Stub solution in the underlying figure:\\
+        As it will be shown soon, this solution produces distortions due to the fact that the calibration will introduce strange oscillations in order to reprice the overlapping instrument. In fact, the Figure \ref{fig:includingcurve}, shows how the curve is pushed down till $-0.40\%$ and then turns back to the ECB OIS level. It is quite obvious that this strange curve's behaviour is not due to market quotes but to calibration's discrepancy resulting from the overlapping section. Finally, let's present the forward Stub solution in the underlying figure:\\
         
         \begin{figure}[!h]
         \centering
@@ -584,7 +581,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{figure}
         
         \newpage
-        As visible, there are no wide oscillation in the curve's shape and the repricing errors analysis, represented in Figure,  shows that this approach is the one which minimize all out-of-curve instruments, ensuring also the perfect reprice of the overlapping instrument excluded.
+        As visible, there are no wide oscillation in the curve's shape and the repricing errors analysis, represented in Figure \ref{fig:errors},  shows that this approach is the one which minimize all out-of-curve instruments, ensuring also the perfect reprice of the overlapping instrument excluded.
         
         \begin{figure}[!h]
         \centering
@@ -622,7 +619,6 @@ This chapter wants to focus on overnight curve construction passing through ever
         \sum_{i=1}^{N} ( C(t_0,T_p^i) + \tau(T_p^{i-1}, T_p^i) S_T P(t_0,T_p^i) )
         \end{split}
         \end{equation*}
-
         In order to use these instruments for building the USD overnight rate curve it is necessary to bootstrap this curve together with the 3M Libor forwarding curve but this implies that both curves must be bootstrapped jointly. Because this combined bootstrap could be a bit complex, suppose that swaps USD Libor 3M against fixed rate are quoted in the market. Each market quote represents the fixed rate making the two legs of the swap equal. So, it is possible to substitute the USD Libor 3M with the fixed rate of the specific swap maturing in $T$ and set the following equation: 
 
         \begin{equation*}
@@ -631,7 +627,6 @@ This chapter wants to focus on overnight curve construction passing through ever
         \sum_{i=1}^{N} ( C(t_0,T_p^i) + \tau(T_p^{i-1}, T_p^i) S_T P(t_0,T_p^i) )
         \end{split}
         \end{equation*}
-    
         By means of the synthetic instrument above, the USD overnight curve bootstrap can be performed now using the spread $S_T$ and without the USD Libor 3M forwarding term structure. Therefore, this simplification allows a simpler bootstrap of this kind of instruments.
         
         \subsection{Hull \& White Model calibration for Convexity Adjustment estimation} \label{subsection:3.4.2} 
@@ -735,13 +730,13 @@ This chapter wants to focus on overnight curve construction passing through ever
         &= \frac{P_0(t_k)}{P_0(t_{k+1})} \exp \bigg\{ \frac{\sigma^2}{a^2} \int_0^t e^{2a s} \bigg[ e^{-a t_{k+1}} -e^{-a T_p} \bigg] \bigg[ e^{-a t_k} - e^{-a t_{k+1}} \bigg] ds \bigg\}\\
         &= \frac{P_0(t_k)}{P_0(t_{k+1})} \exp \bigg\{ \frac{\sigma^2}{2a^3} \bigg( e^{2a t} -1 \bigg) \bigg[ e^{-a t_{k+1}} -e^{-a T_p} \bigg] \bigg[ e^{-a t_k} - e^{-a t_{k+1}} \bigg] \bigg\}
         \end{split}
-        \end{equation*}
+        \end{equation*}\\
         
         Therefore, the convexity adjustment $ConvAdj$ can be defined due to the delayed payment of the coupon as:
         
         \begin{equation*}
         ConvAdj(t) = \exp \bigg\{ \frac{\sigma^2}{2a^3} \bigg( e^{2a t} -1 \bigg) \bigg[ e^{-a t_{k+1}} -e^{-a T_p} \bigg] \bigg[ e^{-a t_k} - e^{-a t_{k+1}} \bigg] \bigg\}
-        \end{equation*}
+        \end{equation*}\\
         Another approach suggested in \cite{java} is to approximate the arithmetic average through the geometric one in order to use the telescoping property and simplify the computation. If $x$ is small, it is possible to set $ x = \log (1+x) + c(x)$, so, from the first section, it can be derived:
         \begin{equation*}
         \begin{split}
@@ -751,7 +746,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         &=E^Q \bigg[D(t_0,T_p^i) \bigg\{\log \bigg( \frac{P(t_h,t_h)}{P(t_h,T_p^i)}  \bigg) +ConvAdj_1 \bigg\} \bigg] \\
         &= P(t_0,T_p^i) \bigg\{\log \bigg( \frac{P(t_0,t_h)}{P(t_0,T_p^i)} \bigg) +ConvAdj_1+ConvAdj_2 \bigg\}
         \end{split}
-        \end{equation*}
+        \end{equation*}\\
         This is the geometric approximation for the arithmetic-average coupon OIS fair rate.
         
         \begin{figure}[!h]
@@ -870,11 +865,11 @@ This devoted to introduce some basic and fundamental interest rate rule in order
     \begin{itemize}
     \item{\bfseries Zero Rates (or Spot Rates)}: it's the rate of interest earned on an investment that starts accruing interests from today $(= \mbox{spot date})$ and provides a unique payoff only at maturity date (no intermediate coupons).
     \item{\bfseries Forward Rates}: it's the rate of interest earned on an investment that starts accruing at a future date $(> \mbox{spot date})$ and provides a unique payoff. A forward rate represents the most probable expectation for the future fixing of the present zero rate. Before the beginning of the Multi-Curve World, moving on a single standard curve leads to a situation that it was always possible to calculate the implied forward rate starting from 2 zero rates. To fix this concept let's make an example:\\
-    Suppose that today's interest rate term structure shows that a 3 months deposit market value is $r\ped{0 \times 3}$ and a 6 months deposit market value is $r\ped{0 \times 6}$. In the old Single-Curve World we were always able to calculate the (3X6) F.R.A. implied quote $f\ped{3 \times 6}$ (that represents the interest rate payed by an investment which starts from a 3  months forward date and ends 3 months after). Taking advantage of no arbitrage theory this relation must always old: 
+    Suppose that today's interest rate term structure shows that a 3 months deposit market value is $r\ped{0 \times 3}$ and a 6 months deposit market value is $r\ped{0 \times 6}$. In the old Single-Curve World we were always able to calculate the (3X6) F.R.A. implied quote $f\ped{3 \times 6}$ (that represents the interest rate payed by an investment which starts from a 3  months forward date and ends 3 months after). Taking advantage of no arbitrage theory this relation must always old: \\
     $$1 \cdot e^{r\ped{0 \times 6} \cdot t\ped{2}} = 1 \cdot e^{r\ped{0 \times 3} \cdot t\ped{1}} \cdot e^{F\ped{1 \times 2} \cdot (t\ped{2} - t\ped{1})}$$
     $$e^{r\ped{0 \times 6} \cdot t\ped{2}} = e^{r\ped{0 \times 3} \cdot t\ped{1} + F\ped{1 \times 2} \cdot (t\ped{2} - t\ped{1})}$$
     $$r\ped{0 \times 6} \cdot t\ped{2} = r\ped{0 \times 3} \cdot t\ped{1} + F\ped{1 \times 2} \cdot (t\ped{2} - t\ped{1})$$
-    $$F\ped{3 \times 6} = \frac{r\ped{0 \times 6} \cdot t\ped{2} - r\ped{0 \times 3} \cdot t\ped{1}}{(t\ped{2} - t\ped{1})}$$C
+    $$F\ped{3 \times 6} = \frac{r\ped{0 \times 6} \cdot t\ped{2} - r\ped{0 \times 3} \cdot t\ped{1}}{(t\ped{2} - t\ped{1})}$$
     \\
     Applying the same formula for discount factors we derive that:
     $$F\ped{3 \times 6} = \frac{1}{(t\ped{2} - t\ped{1})} \cdot \ln\left(\frac{D\ped{0 \times 3}}{D\ped{0 \times 6}}\right)$$
