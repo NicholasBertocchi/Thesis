@@ -479,8 +479,8 @@ This chapter wants to focus on overnight curve construction passing through ever
         \caption{Hagan and West stress case}
         \label{fig:stresscase}
         \end{figure}
-        It's a method that could be applied to any cubic interpolation scheme, for example the cubic natural spline one, to preserve monotonicity. In case of $C^{2}$ interpolation schemes the Hyman filter ensures monotonicity at the expenses of the second derivative of the interpolated function which will no longer be continuous in the points where the filter has been applied.\\
-        Let's briefly sketch how Hyman filter works. When input data are locally monotone (three successive increasing or decreasing points), if the chosen interpolating function is already monotonic, the Hyman filter leaves it unchanged preserving all of its original features (and, as a consequence, without introducing any distortion), otherwise it changes the slopes locally just enough to guarantee monotonicity. When the data are not locally monotone, instead, the interpolated function will have a maximum/minimum at the node. Maximum and minimum points are allowed also between pillars. The effect of Hyman Filter applied to Cubic Natural Spline Interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:hymanzero} and \ref{fig:hymanlog}. Looking at the smoothness of forward rates, it's clear that this is the best approach from a forward rate smoothness point of view. \\
+        The Hyman's filter could be applied to any cubic interpolation scheme, for example the cubic natural spline one, to preserve monotonicity. In case of $C^{2}$ interpolation schemes the Hyman filter ensures monotonicity at the expenses of the second derivative of the interpolated function which will no longer be continuous in the points where the filter has been applied.\\
+        Let's briefly sketch how Hyman filter works. When input data are locally monotone (three successive increasing or decreasing points), if the chosen interpolating function is already monotonic, the Hyman filter leaves it unchanged preserving all of its original features (and, as a consequence, without introducing any distortion), otherwise it changes the slopes locally just enough to guarantee monotonicity. When the data are not locally monotone, instead, the interpolated function will have a maximum/minimum at the node. Maximum and minimum points are allowed also between pillars. The effect of Hyman Filter applied to Cubic Natural Spline Interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:hymanzero} and \ref{fig:hymanlog}. Looking at the smoothness of forward rates, it's clear that this is the best approach from a forward rate smoothness point of view.\\
         
         \begin{figure}[!h]
         \centering
@@ -524,15 +524,14 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{figure}
         
         \newpage
-        As visible in the previous figures the two approaches produce a very similar behaviour. Finally, a repricing error analysis is shown in Figure \ref{fig:repricingmixed}. 
+        As visible in the previous figures the two approaches produce a very similar behaviour. Finally, a repricing error analysis is shown in Figure \ref{fig:repricingmixed}.  \\
         
         \begin{figure}[!h]
         \centering
         \includegraphics[width=0.6\textwidth]{images/repricingmixed.png}
         \caption{Repricing errors on out-of-curve OIS using a linear interpolation for the whole curve (first column), a share range mixed interpolation (second column) and a split range mixed interpolation (last column).}
         \label{fig:repricingmixed}
-        \end{figure}
-        
+        \end{figure} 
         The aim of this analysis is to demonstrate that the mixed interpolation is the best way to interpolate the overnight curve looking to the curve goodness, expressed in out-of-curve OIS repricing errors. In order to do that, a Log-Linear approach for the whole curve, a Mixed Log-linear/Hyman share range approach and a Mixed Log-linear/Hyman split range approach have been compared. Figure \ref{fig:repricingmixed} shows that the three methods produce almost the same results in the short term section curve but in the long term section the repricing errors tend to diverge due to the fact that a piecewise constant interpolation becomes less and less accurate as the instrument maturity increase.  \\
         For this reasons, this work suggest that the mixed interpolation is the best way to interpolate the overnight curve and it has also the advantage to permits the usage of a {\it Forward Stub} in order to fix the overlapping problem that it will be discussed in next section.
          
