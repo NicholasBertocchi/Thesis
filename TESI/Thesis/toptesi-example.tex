@@ -575,7 +575,6 @@ This chapter wants to focus on overnight curve construction passing through ever
         The Stub forward rate is implied in the market and can be derived assuming a no-arbitrage condition. In order to not introduce arbitrages, it is necessary to obtain the Stub quote imposing that the excluded instrument must be repriced exactly (OIS2M in above Figure). In order to replicate the OIS2M value the following relationship must hold:
         
         $$e^{\int_{0}^{t\ped{1}} f_{inst}ds} \cdot e^{\int_{t\ped{1}}^{t\ped{2}} f_{inst}ds} \cdot e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds} = e^{\int_{0}^{t\ped{3}} f_{inst}ds}$$
-        
         where: 
         $$t\ped{1} = \mbox{Last non-overlapping instrument's maturity in year fraction}$$
         $$t\ped{2} = \mbox{First ECB Dated OIS settlement date  in year fraction}$$
@@ -595,11 +594,14 @@ This chapter wants to focus on overnight curve construction passing through ever
         Assuming simple compounding:\\
         
         $$ \mbox{{\it Stub}} = \frac{[\frac{(1+F\ped{0 x t\ped{3}} \cdot \tau\ped{0 x t\ped{3}})}{(1+F\ped{0 x t\ped{1}} \cdot \tau\ped{0 x t\ped{1}}) \cdot (1+F\ped{t\ped{2} x t\ped{3}} \cdot \tau\ped{t\ped{2} x t\ped{3}})}-1]}{\tau\ped{t\ped{1} x t\ped{2}}}$$\\
+        Introducing in the calibration this forward Stub improve consistently the overnight curve goodness avoiding unwanted distortion and oscillation as will be shown in next section. Otherwise, this solution can be implemented only if the bootstrap algorithm uses a log-linear interpolation for the short-term section of the curve. Interpolating log-linearly the overnight curve becomes piecewise constant, as seen in \ref{subsection:1.3.1}, and this assumption permits to derive the $e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds}$ value that must be equal to ECB OIS market quote. The good news is that, as seen in \ref{section:3.1.4}, the best practise to interpolate the ON curve is by means of a mixed interpolation, which interpolates log-linearly the short term section of the curve. It is also important to underlying that the Stub algorithm produces good results also in limit cases as, for example, when $\tau\ped{t\ped{1} x t\ped{2}} \longrightarrow \frac{1}{365}$ that represents the particular case in which the Stub quote duration is just 1 day.\\
+        Finally, during a year, there surely happen a particular scenario in which, since the first ECB OIS fixing becomes earlier and earlier, the discarded spot instruments is the first spot starting
+        OIS. This case implies that the so called "forward Stub" it is not forward start anymore because it becomes a spot instrument which covers the year fraction: $\tau\ped{0 x t\ped{1}}$ (where $t\ped{1}$ is the first ECB OIS fixing date).
         
-        Introducing in the calibration this forward Stub improve consistently the overnight curve goodness avoiding unwanted distortion and oscillation as will be shown in next session. Otherwise, this solution can be implemented only if the bootstrap algorithm uses a log-linear interpolation for the first curve's section. Interpolating log-linearly the overnight curve becomes piecewise constant, as seen in \ref{subsection:1.3.1}, and this assumption permits to derive the $e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds}$ value that must be equal to ECB OIS market quote. The good news is that, as seen in \ref{section:3.1}, the best practise to interpolate the ON curve is by means of a mixed interpolation, which interpolates log-linearly the short term section of the curve. It is also important to underlying that the Stub algorithm produces good results also in limit cases as, for example, when $\tau\ped{t\ped{1} x t\ped{2}} \longrightarrow \frac{1}{365}$ that represents the particular case in which the Stub quote duration is just 1 day.\\
-        Finally, during a year, there surely happen a particular scenario in which the discarded spot instruments is the spot week (SW) OIS. This case implies that the so called "forward Stub" it is not forward start anymore because it becomes a spot instrument which value can be derived by means of the following formula:\\
+        \newpage
+        In this case, the "spot stub" implied value is:
         
-         $$ \mbox{{\it Stub}} = \frac{[\frac{1+F\ped{0 x t\ped{2}} \cdot \tau\ped{0 x t\ped{2}}}{1+F\ped{t\ped{1} x t\ped{2}} \cdot \tau\ped{t\ped{1} x t\ped{2}})}-1]}{\tau\ped{t\ped{0} x t\ped{1}}}$$\\
+         $$ \mbox{{\it Stub}} = \frac{[\frac{1+F\ped{0 x t\ped{2}} \cdot \tau\ped{0 x t\ped{2}}}{1+F\ped{t\ped{1} x t\ped{2}} \cdot \tau\ped{t\ped{1} x t\ped{2}})}-1]}{\tau\ped{t\ped{0} x t\ped{1}}}$$
         
         \subsection{Impact on Curve and Repricing Errors} \label{subsection:3.2.2}
         In the previous section it has been presented a particular ON curve problem and 3 possible ways to solve it. Let's start from the worst one, namely the solution in which the overlapping instrument is excluded leaving a non-covered curve's section. With this approach the curve obtained is represented in the underlying figure:\\
@@ -645,7 +647,31 @@ This chapter wants to focus on overnight curve construction passing through ever
         \subsection{The GBP and USD market case: Negative Jumps} \label{subsection:3.3.2}
         
     \section{Fed Funds Arithmetic Average Coupon OIS} \label{section:3.4}
-    A Fed Funds arithmetic-average coupon OIS is a swap where the floating leg pays coupons corresponding to the average of daily overnight rates $L^{ON}$ over three months periods against a specific rate. Suppose to have a swap with maturity $T$, which pays the floating coupons in $\{T_p^1, T_p^2, ..., T_p^N=T \}$. Assuming $L^{ON}$ as the ON rate and $F^{ON}$ the forward ON rate, the NPV of each coupon could be written as:
+    From the previous section the subject have been moved to foreign currency overnight curve calibration. This part aims to discuss how the US dollar overnight yield curve (USDON) can be improved including in the bootstrap the Fed Funds (FF) arithmetic OIS instead of the simple OIS indexed to the Fed Funds rate. This is a recommendable practice due to the fact that arithmetic OIS are traded in the dealer's market more actively and so, fore the liquidity criteria discussed in \ref{section:2.1}, it is better to include them in the calibration algorithm.
+    
+        \subsection{FF OIS Vs. FF-LIBOR basis swap} \label{subsection:3.3.1}
+        FF OIS, as already discussed in \ref{subsection:2.1.2}, are particular IRS which floating-leg pays the daily compounded FF rate. In a interest rate basis swap (IRBS), instead, two different floating rates in the same currency are exchanged which can be, for example, two LIBORs with different tenors. FF-LIBOR, so, are basis swaps which exchange the FF rate on a leg and a LIBOR rate on the other. In derivative products like swaps the FF rates, as the EUR overnight ones, are never paid on a daily basis but paid collectively in a single coupon. The difference between FF OIS and FF-LIBOR basis swaps is that, while in FF OIS coupons are done on a daily compounded basis, in FF-LIBOR basis swaps are built doing an arithmetic average. This calculation difference leads to some complications which implies two convexity adjustment which derivation will be discuss in next section.\\
+        Expressing the previous concept in formulas, it is possible to define the daily compounded FF OIS rate for the period $(t\ped{1},t\ped{2})$ as:
+        
+        $$R^{OIS}(t\ped{1},t\ped{2}) = \frac{1}{\tau\ped{t\ped{1} x t\ped{2}}} \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]$$\\
+        While the arithmetic average FF rate is sampled as:\\
+        $$R^{Arithm}(t\ped{1},t\ped{2}) = \frac{\sum_{k=1}^{K} \tau\ped{k}r\ped{k}}{\tau\ped{t\ped{1} x t\ped{2}}}$$\\
+        Where $r\ped{k}$ is the effective ON rates fixed for the period $(t\ped{1},t\ped{2})$ and $\tau\ped{k}$ is the corresponding year fraction calculated in {\it Actual/360}. Since $\tau\ped{t\ped{1} x t\ped{2}}$ is the year fraction related to the whole interest period, it is straightforward to understand that $\tau\ped{t\ped{1} x t\ped{2}} = \sum_{k=1}^{K}\tau\ped{k}$.\\
+        So, assuming a notional equal to $N$, the interest paid by the FF OIS for the period $(t\ped{1},t\ped{2})$ is:
+        
+        $$N * R^{OIS}(t\ped{1},t\ped{2}) * \tau\ped{t\ped{1} x t\ped{2}} = N * \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]$$
+        and for the FF-LIBOR basis swap is:
+        $$N * R^{Arithm}(t\ped{1},t\ped{2}) * \tau\ped{t\ped{1} x t\ped{2}} = N * \sum_{k=1}^{K}\tau\ped{k}r\ped{k}$$
+        
+        \subsection{FF OIS and FF-LIBOR basis swap valuation} \label{subsection:3.4.2}
+        Denoting as $V(T)$ the value at maturity $T$ of a collateralized Bond, its payoff can be defined as the conditional expectation at time $T$, under a proper risk-neutral measure $M$, of the average risk-free rate which, for all collateralized interest rate derivatives, can be substituted with the overnight rate (see \cite{hull} for more details). In formula:
+        
+        $$D(t,T) = E^{M}\ped{t} \left[e^{-\int_t^T r(u)du}\right]$$
+        
+        \subsection{The geometric average approximation} \label{subsection:3.4.3}
+    
+    
+    %A Fed Funds arithmetic-average coupon OIS is a swap where the floating leg pays coupons corresponding to the arithmetic average of daily overnight rates $L^{ON}$ over three months periods against a specific rate. Suppose to have a swap with maturity $T$, which pays the floating coupons in $\{T_p^1, T_p^2, ..., T_p^N=T \}$. Assuming $L^{ON}$ as the ON rate and $F^{ON}$ the forward ON rate, the NPV of each coupon could be written as:
     
     \begin{equation*}
     \begin{split}
@@ -660,7 +686,7 @@ This chapter wants to focus on overnight curve construction passing through ever
     
     It will be explained in the following section how to evaluate the convexity adjustment by means of an Hull-White short rate model.
      
-        \subsection{Bootstrap methodology} \label{subsection:3.4.1}
+        \subsection{Bootstrap methodology} \label{subsection:3.4.4}
         Actually this kind of instruments are quoted as spread $S_T$ against USD Libor 3M, so it is possible to set the following equation:
 
         \begin{equation*}
@@ -679,7 +705,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{equation*}
         By means of the synthetic instrument above, the USD overnight curve bootstrap can be performed now using the spread $S_T$ and without the USD Libor 3M forwarding term structure. Therefore, this simplification allows a simpler bootstrap of this kind of instruments.
         
-        \subsection{Hull \& White Model calibration for Convexity Adjustment estimation} \label{subsection:3.4.2} 
+        \subsection{Hull \& White Model calibration for Convexity Adjustment estimation} \label{subsection:3.4.5} 
         Suppose to use an Hull-White model to describe the implicit risk neutral Q-dynamic of the short rate. 
         $$dr_t=\left[\theta(t)-ar_t \right]dt+\sigma dW_t$$
         Its explicit Q-dynamic could be written as:
@@ -806,7 +832,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \label{fig:convexity}
         \end{figure}
         
-        \subsection{Model Calibration} \label{subsection:3.4.3}
+        \subsection{Model Calibration} \label{subsection:3.4.6}
         Now that the convexity adjustment formula is defined, it is necessary to choose the parameters of the HW model (speed of mean reversion $a$ and annual volatility $\sigma$). As visible in Figure \ref{fig:convexity}, the impact of the parameters on the convexity adjustment could be not negligible.
         A good approach could be to calibrate parameters in order to bootstrap a curve coherent with the standard compounded OIS quotes. Suppose to bootstrap an OIS curve using arithmetic-average coupon OIS without convexity (quotes from 1Y to 10Y, 12Y, 15Y, 20Y, 25Y, 30Y). Then use this curve to price fair rates of the corresponding standard compounded OIS. Comparing the results with the compounded OIS market quotes, a strip of repricing errors increasing in the maturities emerges (blue points in Figure \ref{fig:reperrors}).
         The first idea is then to find the parameters such that the curve bootstrapped through arithmetic-average coupon OIS (using the convexity adjustment) reprices compounded OIS fair rates as good as possible but , unfortunately, this approach is computationally heavy. Another way could be instead to bootstrap an OIS curve through compounded OIS, then keeping the curve fixed, evaluate the arithmetic-average coupon OIS fair rates (using the convexity adjustment) and then look for the parameters that minimize the repricing errors between the evaluated fair rates and the market quotes. Proceeding in this way, a couple of optimal parameters can be founded. Now it is possible to bootstrap again the OIS curve through arithmetic-average coupon OIS with convexity adjustment. In Figure \ref{fig:reperrors} is shown how the compounded OIS repricing errors (red points) are minimized.\\
@@ -948,6 +974,8 @@ This devoted to introduce some basic and fundamental interest rate rule in order
 \bibitem{java} K.~Takada, {\em Valuation of Arithmetic Average of Fed Funds Rates and Construction of the US dollar Swap Yield Curve}, http://www.javaquant.net/papers/AverageIndexSwap.pdf , September 2011.\\
 
 \bibitem{ECB} {\em European Central Bank, schedules for the meetings of the Governing Council}, http://www.ecb.europa.eu/events/calendar/mgcgc/html/index.en.html.
+
+\bibitem{hull} J.C.~Hull, {\em Option, Futures and Other Derivatives ($8^{th}\mbox{edition}$)}, Prentice Hall, Cap.30-Pag.682, 2012.\\
 
 \end{thebibliography}
 
