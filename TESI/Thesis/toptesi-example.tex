@@ -633,13 +633,20 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{figure}
         
         \newpage
-        As visible, there are no wide oscillation in the curve's shape and the repricing errors analysis, represented in Figure \ref{fig:errors},  shows that this approach is the one which minimize all out-of-curve instruments, ensuring also the perfect reprice of the overlapping instrument excluded.
+        As visible, there are no wide oscillation in the curve's shape and the repricing errors analysis, represented in Figure \ref{fig:errors}, shows that this approach is the one which minimize all out-of-curve instruments, ensuring also the perfect reprice of the overlapping instrument excluded.
         
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.7\textwidth]{images/errors.png}
+        \includegraphics[width=0.6\textwidth]{images/errors.png}
         \caption{Repricing errors summary for all possible solutions.}
         \label{fig:errors}
+        \end{figure}
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/repricingimage.png}
+        \caption{The minimization of all out-of-curve instruments repricing errors (in bps) using the Stub solution.}
+        \label{fig:repricingimage}
         \end{figure}
         
     \section{Jumps Inclusion} \label{section:3.3}
@@ -649,200 +656,147 @@ This chapter wants to focus on overnight curve construction passing through ever
     \section{Fed Funds Arithmetic Average Coupon OIS} \label{section:3.4}
     From the previous section the subject have been moved to foreign currency overnight curve calibration. This part aims to discuss how the US dollar overnight yield curve (USDON) can be improved including in the bootstrap the Fed Funds (FF) arithmetic OIS instead of the simple OIS indexed to the Fed Funds rate. This is a recommendable practice due to the fact that arithmetic OIS are traded in the dealer's market more actively and so, fore the liquidity criteria discussed in \ref{section:2.1}, it is better to include them in the calibration algorithm.
     
-        \subsection{FF OIS Vs. FF-LIBOR basis swap} \label{subsection:3.3.1}
-        FF OIS, as already discussed in \ref{subsection:2.1.2}, are particular IRS which floating-leg pays the daily compounded FF rate. In a interest rate basis swap (IRBS), instead, two different floating rates in the same currency are exchanged which can be, for example, two LIBORs with different tenors. FF-LIBOR, so, are basis swaps which exchange the FF rate on a leg and a LIBOR rate on the other. In derivative products like swaps the FF rates, as the EUR overnight ones, are never paid on a daily basis but paid collectively in a single coupon. The difference between FF OIS and FF-LIBOR basis swaps is that, while in FF OIS coupons are done on a daily compounded basis, in FF-LIBOR basis swaps are built doing an arithmetic average. This calculation difference leads to some complications which implies two convexity adjustment which derivation will be discuss in next section.\\
-        Expressing the previous concept in formulas, it is possible to define the daily compounded FF OIS rate for the period $(t\ped{1},t\ped{2})$ as:
+        \subsection{Fed Funds OIS Vs. Arithmetic-LIBOR basis swap} \label{subsection:3.4.1}
+        FF-OIS, as already discussed in \ref{subsection:2.1.2}, are particular IRS which floating-leg pays the daily compounded FF rate. In a interest rate basis swap (IRBS), instead, two different floating rates in the same currency are exchanged which can be, for example, two LIBORs with different tenors. Arithmetic-LIBOR, so, are basis swaps which exchange the FF rate on a leg and a LIBOR rate on the other. In derivative products like swaps the FF rates, as the EUR overnight ones, are never paid on a daily basis but paid collectively in a single coupon. The difference between FF-OIS and Arithmetic-LIBOR basis swaps is that, while in FF-OIS coupons are done on a daily compounded basis, in Arithmetic-LIBOR basis swaps are built doing an arithmetic average. This calculation difference leads to some complications which implies two convexity adjustment which derivation will be discuss Section \ref{subsection:3.4.5}.\\
+        Expressing the previous concept in formulas, it is possible to define the daily compounded FF-OIS rate for the period $(t\ped{1},t\ped{2})$ as:
         
-        $$R^{OIS}(t\ped{1},t\ped{2}) = \frac{1}{\tau\ped{t\ped{1} x t\ped{2}}} \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]$$\\
-        While the arithmetic average FF rate is sampled as:\\
-        $$R^{Arithm}(t\ped{1},t\ped{2}) = \frac{\sum_{k=1}^{K} \tau\ped{k}r\ped{k}}{\tau\ped{t\ped{1} x t\ped{2}}}$$\\
-        Where $r\ped{k}$ is the effective ON rates fixed for the period $(t\ped{1},t\ped{2})$ and $\tau\ped{k}$ is the corresponding year fraction calculated in {\it Actual/360}. Since $\tau\ped{t\ped{1} x t\ped{2}}$ is the year fraction related to the whole interest period, it is straightforward to understand that $\tau\ped{t\ped{1} x t\ped{2}} = \sum_{k=1}^{K}\tau\ped{k}$.\\
-        So, assuming a notional equal to $N$, the interest paid by the FF OIS for the period $(t\ped{1},t\ped{2})$ is:
+        $$R^{OIS}(t\ped{1},t\ped{2}) = \frac{1}{\tau(t\ped{1},t\ped{2})} \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]$$\\
+        While the arithmetic average Fed Funds rate is sampled as:\\
+        $$R^{Arithm}(t\ped{1},t\ped{2}) = \frac{\sum_{k=1}^{K} \tau\ped{k}r\ped{k}}{\tau(t\ped{1},t\ped{2})}$$\\
+        Where $r\ped{k}$ is the effective ON rates fixed for the period $(t\ped{1},t\ped{2})$ and $\tau\ped{k}$ is the corresponding year fraction calculated in {\it Actual/360}. Since $\tau(t\ped{1},t\ped{2})$ is the year fraction related to the whole interest period, it is straightforward to understand that $\tau(t\ped{1},t\ped{2}) = \sum_{k=1}^{K}\tau\ped{k}$.\\
+        So, assuming a notional equal to $N$, the interest paid by the FF-OIS for the period $(t\ped{1},t\ped{2})$ is:
         
-        $$N * R^{OIS}(t\ped{1},t\ped{2}) * \tau\ped{t\ped{1} x t\ped{2}} = N * \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]$$
-        and for the FF-LIBOR basis swap is:
-        $$N * R^{Arithm}(t\ped{1},t\ped{2}) * \tau\ped{t\ped{1} x t\ped{2}} = N * \sum_{k=1}^{K}\tau\ped{k}r\ped{k}$$
+        $$N * R^{OIS}(t\ped{1},t\ped{2}) * \tau(t\ped{1},t\ped{2}) = N * \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]$$
+        and for the Arithmetic-LIBOR basis swap is:
+        $$N * R^{Arithm}(t\ped{1},t\ped{2}) * \tau(t\ped{1},t\ped{2}) = N * \sum_{k=1}^{K}\tau\ped{k}r\ped{k}$$
         
-        \subsection{FF OIS and FF-LIBOR basis swap valuation} \label{subsection:3.4.2}
-        Denoting as $V(T)$ the value at maturity $T$ of a collateralized Bond, its payoff can be defined as the conditional expectation at time $T$, under a proper risk-neutral measure $M$, of the average risk-free rate which, for all collateralized interest rate derivatives, can be substituted with the overnight rate (see \cite{hull} for more details). In formula:
+        \subsection{Fed Funds OIS and Arithmetic-LIBOR basis swap valuation} \label{subsection:3.4.2}
+        Denoting as $D(t,T)$ the value at maturity $T$ of a collateralized Bond, its payoff can be defined as the conditional expectation at time $T$, under a proper risk-neutral measure $M$, of the average risk-free rate which, for all collateralized interest rate derivatives, can be substituted with the overnight rate (see \cite{hull} for more details). In formula:
         
         $$D(t,T) = E^{M}\ped{t} \left[e^{-\int_t^T r(u)du}\right]$$
+        This permits to express the value $V(t,T)$ of a collateralized FF-OIS over the accrual period $(t\ped{1},t\ped{2})$ as:
         
+        \begin{equation*}
+        \begin{split}
+        V^{OIS}(t\ped{1},t\ped{2}) &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \tau(t\ped{1},t\ped{2})R^{OIS}(t\ped{1},t\ped{2})\right] \\
+        &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]\right] \\
+        &= D(0,t\ped{1})-D(0,t\ped{2})\\
+        \end{split}
+        \end{equation*}
+        so the $t$ forward OIS rate is given by:
+        
+        $$R_f^{OIS}(t;t\ped{1},t\ped{2}) = \frac{1}{\tau(t\ped{1},t\ped{2})}\left[\frac{D(t,t\ped{1})}{D(t,t\ped{2})}-1\right]$$
+        The Arithmetic-LIBOR basis swap present value over the accrual period $(t\ped{1},t\ped{2})$, instead, is given by:
+    
+        \begin{equation*}
+        \begin{split}
+        V^{Arithm}(t\ped{1},t\ped{2}) &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \tau(t\ped{1},t\ped{2})R^{Arithm}(t\ped{1},t\ped{2})\right] \\
+        &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \left[\prod_{k=1}^{K} \tau\ped{k}r\ped{k}\right]\right] \\
+        &\approx E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \int_{t\ped{1}}^{t\ped{2}} r(u)du\right] \\
+        &= D(0,t\ped{2})E^{t\ped2}\left[\int_{t\ped{1}}^{t\ped{2}} r(u)du\right]
+        \end{split}
+        \end{equation*}
+        Where the collateralized Bond value $D(0,t\ped{2})$ with maturity $t\ped{2}$ is the numeraire which permits to move in a forward risk neutral world and $e^{-\int_0^{t\ped{2}} r(u)du}$ is the stochastic discount factor.
+    
         \subsection{The geometric average approximation} \label{subsection:3.4.3}
+        Katsumi Takada (see \cite{takada}) has shown that, to evaluate Arithmetic-LIBOR basis swap, a geometric approximation can be used. This approach takes advantage of the relationship between simple compounded and continuously compounded rates:
+        
+        $$1 + R * \tau(t,T) = e^{\tau(t,T)*r}$$
+        If $R$ it is assumed to be the overnight rate than the compounded amount between the accrual period $(t\ped{1},t\ped{2})$ is calculated as:
+        
+        $$\prod_{k=1}^{K}(1+\tau\ped{k}R\ped{k}) = e^{\sum_{k=1}^{K}\tau\ped{k}r\ped{k}}$$
+        Where $R\ped{k}$ is the simple compounded ON rate and $r\ped{k}$ is the continuously compounded ON rate which satisfies the relationship expressed before. the previous equation also implies a limiting relationship so that:
+        
+        $$\lim_{\tau \rightarrow 0}(1+\tau R)^{\frac{1}{\tau}} = e^R$$
+        This means that if $\tau$ is enough small like, for example, one day ($\frac{1}{360}$ using a Act/360 convention) then the simple ON rate $R$ approximates reasonably the continuously compounded ON rate $r$. Since the ON rate has a small $\tau$, it is possible to re-write the previous equation:
+        $$\prod_{k=1}^{K}(1+\tau\ped{k}R\ped{k}) = e^{\sum_{k=1}^{K}\tau\ped{k}r\ped{k}}$$
+        like:
+        $$\prod_{k=1}^{K}(1+\tau\ped{k}R\ped{k}) = e^{\sum_{k=1}^{K}\tau\ped{k}R\ped{k}}$$
+        So, the Arithmetic-LIBOR basis swap rate can be also re-written as:
+        \begin{equation*}
+        \begin{split}
+        V^{Arithm}(t\ped{1},t\ped{2}) &= \frac{1}{\tau(t\ped{1},t\ped{2})}log\prod_{k=1}^{K}(1+\tau\ped{k}R\ped{k})\\
+        &= \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})R^{OIS}(t\ped{1},t\ped{2})) \\
+        \end{split}
+        \end{equation*}
+        This leads to another possible description of the Arithmetic-LIBOR basis swap valuation formula:
+        
+        \begin{equation*}
+        \begin{split}
+        V^{Arithm}(t\ped{1},t\ped{2}) &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \tau(t\ped{1},t\ped{2})R^{Arithm}(t\ped{1},t\ped{2})\right] \\
+        &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \left[\sum_{k=1}^{K} \tau\ped{k}r\ped{k}\right]\right] \\
+        &\approx E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \left[log\prod_{k=1}^{K} (1+\tau\ped{k}R\ped{k}\right]\right] \\
+        &\approx E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \int_{t\ped{1}}^{t\ped{2}} r(u)du\right] \\
+        &= D(0,t\ped{2})E^{t\ped2}\left[\int_{t\ped{1}}^{t\ped{2}} r(u)du\right]
+        \end{split}
+        \end{equation*}
+        In this case, the Airthmetic-LIBOR $t$ forward rate can be defined as:
+        $$R_f^{Arithm}(t;t\ped{1},t\ped{2}) = \frac{1}{\tau(t\ped{1},t\ped{2})}E^{t\ped{2}}\left[\int_{t\ped{1}}^{t\ped{2}} ru(du)\right]$$
+        Supposing that rates have no volatility, the ON rate $r(u)$ at time $u$ can be replaced by the initial instantaneous forward rate with maturity $u$, $r(0;u)$. In this particular case one of the two convexity adjustment must not be considered anymore and it is possible to derive:
+        
+        \begin{equation*}
+        \begin{split}
+        \int_{t\ped{1}}^{t\ped{2}}r(0;u)du &= log\frac{D(0,t\ped{1})}{D(0,t\ped{2})}\\
+        &= log(1+ \tau(t\ped{1},t\ped{2})*R_f^{Arithm}(0;t\ped{1},t\ped{2}))
+        \end{split}
+        \end{equation*}
+        Otherwise, plotting $log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2}))$ against $\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0,t\ped{1},t\ped{2})$ it is clear that there is a convexity in Arithmetic-LIBOR coupon relative to FF-OIS coupon as shown in Figure \ref{fig:convexity2}. It is also clear that in any case it results that:
+        
+        $$\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0,t\ped{1},t\ped{2}) \geq log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2}))$$\\
+        except when $R_f=0$ in which the payoffs are equal. For this reason, to avoid any kind of arbitrage, the following relationship must hold:
+        
+        $$R_f^{Arithm}(0,t\ped{1},t\ped{2}) < \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2})) < R_f^{OIS}(0;t\ped{1},t\ped{2})$$
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/convexity2.png}
+        \caption{Also without volatility it emerges another kind of convexity in the two payoffs.}
+        \label{fig:convexity2}
+        \end{figure}
+        In conclusion, it is possible to say that the $R_f^{Arithm}(t;t\ped{1},t\ped{2})$ is smaller than the $R_f^{OIS}(t;t\ped{1},t\ped{2})$ by 2 different convexity adjustment the first of which is static and exists even if there is no volatility. Its value corresponds to:
+        
+        $$ConvAdj_1 = R_f^{OIS}(0;t\ped{1},t\ped{2}) - \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2}))$$
+        This is the convexity correction shown in the previous figure. The other convexity adjustment is, instead, dynamic since it is caused by the forward OIS rate volatility and its value is:
+        $$ConvAdj_2 = \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2})) - R_f^{OIS}(0;t\ped{1},t\ped{2})$$
+        The valuation of this second correction term could be performed taking advantage of an Hull \& White short rate model (for more information see \cite{hullwhite}) but its derivation is outside the purposes of this work.
     
-    
-    %A Fed Funds arithmetic-average coupon OIS is a swap where the floating leg pays coupons corresponding to the arithmetic average of daily overnight rates $L^{ON}$ over three months periods against a specific rate. Suppose to have a swap with maturity $T$, which pays the floating coupons in $\{T_p^1, T_p^2, ..., T_p^N=T \}$. Assuming $L^{ON}$ as the ON rate and $F^{ON}$ the forward ON rate, the NPV of each coupon could be written as:
-    
-    \begin{equation*}
-    \begin{split}
-    C(t_0,T_p^i) &=E^Q \bigg[D(t_0,T_p^i) \sum_{k=h}^{T_p^i} \frac{\tau(t_k,t_{k+1}) L^{ON}(t_k,t_{k+1})}{\tau(t_h,T_p)} \tau(t_h,T_p) \bigg] \\
-    &=E^Q \bigg[D(t_0,T_p^i) \sum_{k=h}^{T_p^i} \bigg( \frac{P(t_k,t_k)}{P(t_k,t_{k+1})} -1 \bigg) \bigg] \\
-    &= \sum_{k=h}^{T_p^i} E^Q \bigg[ D(t_0,T_p^i) \bigg( \frac{P(t_k,t_k)}{P(t_k,t_{k+1})} -1 \bigg) \bigg] \\
-    &= \sum_{k=h}^{T_p^i} P(t_0,T_p^i) \bigg( E^{T_p^i} \bigg[ \frac{P(t_k,t_k)}{P(t_k,t_{k+1})} \bigg] -1 \bigg)\\
-    &= \sum_{k=h}^{T_p^i} P(t_0,T_p^i) \bigg( ConvAdj(t_k) \frac{P(t_0,t_k)}{P(t_0,t_{k+1})} -1 \bigg)\\
-    &= \sum_{k=h}^{T_p^i} P(t_0,T_p^i) \bigg( ConvAdj(t_k) \bigg[1 + \tau(t_k,t_{k+1})F^{ON}(t_0,t_k,t_{k+1}) \bigg] -1 \bigg)
-    \end{split}
-    \end{equation*}
-    
-    It will be explained in the following section how to evaluate the convexity adjustment by means of an Hull-White short rate model.
-     
-        \subsection{Bootstrap methodology} \label{subsection:3.4.4}
+        \subsection{Bootstrap methodology and impact on USDON curve} \label{subsection:3.4.4}
         Actually this kind of instruments are quoted as spread $S_T$ against USD Libor 3M, so it is possible to set the following equation:
 
         \begin{equation*}
         \begin{split}
-        \sum_{i=1}^{N} \tau(T_p^{i-1}, T_p^i) F^{3M}(t_0,T_p^{i-1}, T_p^i) P(t_0,T_p^i) =
-        \sum_{i=1}^{N} ( C(t_0,T_p^i) + \tau(T_p^{i-1}, T_p^i) S_T P(t_0,T_p^i) )
+        \sum_{i=1}^{N} \tau(t\ped{i-1},t\ped{i}) L_f^{3M}(0,t\ped{i-1},t\ped{i})D(0,t\ped{i}) =
+        \sum_{i=1}^{N} (V^{Arithm}(t\ped{i-1},t\ped{i}) + \tau(t\ped{i-1},t\ped{i})S_TD(0,t\ped{i}))
         \end{split}
         \end{equation*}
         In order to use these instruments for building the USD overnight rate curve it is necessary to bootstrap this curve together with the 3M Libor forwarding curve but this implies that both curves must be bootstrapped jointly. Because this combined bootstrap could be a bit complex, suppose that swaps USD Libor 3M against fixed rate are quoted in the market. Each market quote represents the fixed rate making the two legs of the swap equal. So, it is possible to substitute the USD Libor 3M with the fixed rate of the specific swap maturing in $T$ and set the following equation: 
 
         \begin{equation*}
         \begin{split}
-        \sum_{i=1}^{N} \tau(T_p^{i-1}, T_p^i) R_T^{3M} P(t_0,T_p^i) = 
-        \sum_{i=1}^{N} ( C(t_0,T_p^i) + \tau(T_p^{i-1}, T_p^i) S_T P(t_0,T_p^i) )
+        \sum_{i=1}^{N} \tau(t\ped{i-1},t\ped{i})R_T^{3M}D(0,t\ped{i}) = 
+        \sum_{i=1}^{N} V^{Arithm}(t\ped{i-1},t\ped{i}) + \tau(t\ped{i-1},t\ped{i})S_TD(0,t\ped{i}))
         \end{split}
         \end{equation*}
-        By means of the synthetic instrument above, the USD overnight curve bootstrap can be performed now using the spread $S_T$ and without the USD Libor 3M forwarding term structure. Therefore, this simplification allows a simpler bootstrap of this kind of instruments.
-        
-        \subsection{Hull \& White Model calibration for Convexity Adjustment estimation} \label{subsection:3.4.5} 
-        Suppose to use an Hull-White model to describe the implicit risk neutral Q-dynamic of the short rate. 
-        $$dr_t=\left[\theta(t)-ar_t \right]dt+\sigma dW_t$$
-        Its explicit Q-dynamic could be written as:
-        $$r_t=r_s e^{-a(t-s)} + \int_s^t e^{-a(t-u)} \theta(u) du + \sigma \int_s^t e^{-a(t-u)} dW_u$$
-        The stochastic discount factor at time t for the maturity T is simply define as $D(t,T)=e^{-\int_t^T r(u) du}$. It is possible to derive the bond price representation at time t for the maturity T, $P(t,T)=e^{-\int_t^T f(t,u) du}$ (where $f(t,u)=F(t,u,u+du)$ is the instantaneous forward rate observed in $t$) as:
-        $$P(t,T)=\exp[A(t,T)-B(t,T)r_t]$$
-        where the two terms $A(t,T)$ and $B(t,T)$ are defined as follows:
-
-        \begin{equation*}
-        \begin{split}
-        B(t,T) &= \frac{1}{a} \left[ 1-e^{-a(T-t)} \right] \\
-        A(t,T) &= \int_t^T \frac{\sigma^2}{2} B^2(u,T) du - \int_t^T \theta(u) B(u,T) du
-        \end{split}
-        \end{equation*}
-        From the previous section the risk neutral Q-dynamic of the bond price $P_t(T)=P(t,T)$ is described as:
-
-        %\begin{equation*}
-        %\begin{split}
-        %f(0,T) &= -\frac{\partial}{\partial T} ln(P(0,T)) \\
-        %&= -\frac{\partial}{\partial T} A(0,T) +
-        %\frac{\partial}{\partial T} B(0,T) r(0) \\
-        %&= -\frac{\sigma^2}{2} B^2(T,T) - 
-        %\int_0^T \frac{\sigma^2}{2} \frac{\partial}{\partial T} B^2(u,T) du \\
-        %&+ \theta(T) B(T,T) +
-        %\int_0^T \theta(u) \frac{\partial}{\partial T} B(u,T) du \\
-        %&+ \frac{\partial}{\partial T} B(0,T) r(0)
-        %\end{split}
-        %\end{equation*}
-
-        %\begin{equation*}
-        %\begin{split}
-        %f(0,T) &= e^{-aT} r(0) + \int_0^T \theta(u) e^{-a(T-u)} du \\
-        %&- \int_0^T \sigma^2 e^{-a(T-u)} \frac{1}{a} 
-        %\left[ 1-e^{-a(T-u)} \right] du \\
-        %&= e^{-aT} r(0) - \frac{\sigma^2}{2a^2} \left[ 1-e^{-aT} \right]^2 \\
-        %&+ \int_0^T \theta(u) e^{-a(T-u)} du
-        %\end{split}
-        %\end{equation*}
-
-        %Deriving in $T$: 
-
-        %\begin{equation*}
-        %\begin{split}
-        %\frac{\partial}{\partial T} f(0,T) 
-        %&= -ae^{-aT} r(0) - \frac{1}{a} \int_0^T \theta(u) e^{-a(T-u)} du \\
-        %&+ \theta(T) - \frac{\sigma^2}{a} e^{-aT} \left[ 1-e^{-aT} \right]
-        %\end{split}
-        %\end{equation*}
-
-        %Evaluating $\frac{\partial}{\partial T} f(0,T) + af(0,T) $, we obtain:
-
-        %$$\theta(T) = \frac{\partial}{\partial T} f(0,T) + af(0,T) + \frac{\sigma^2}{2a} \left[ 1-e^{-2aT} \right]$$
-        
-        \begin{equation*}
-        \begin{split}
-        dP_t(T) &= \left( \frac{\partial}{\partial t} A(t,T) - \frac{\partial}{\partial t} B(t,T) r_t \right) P_t(T) dt
-             - B(t,T) P_t(T) dr_t + \frac{\sigma^2}{2} B(t,T)^2 P_t(T) dt \\
-        dP_t(T) &= \bigg\{ \frac{\partial}{\partial t} A(t,T) - \frac{\partial}{\partial t} B(t,T) r_t -B(t,T)[\theta(t)-ar_t] +\\
-             &+ \frac{\sigma^2}{2} B^2(t,T) \bigg\} P_t(T)dt - B(t,T)P_t(T) \sigma dW_t \\
-        dP_t(T) &= \bigg\{ -\frac{\sigma^2}{2}B^2(t,T) + \theta(t)B(t,T) + [1-aB(t,T)]r_t -B(t,T)[\theta(t)-ar_t] +\\
-             &+ \frac{\sigma^2}{2}B^2(t,T) \bigg\} P_t(T) dt -B(t,T)P_t(T)\sigma dW_t \\
-        dP_t(T) &= r_t P_t(T) dt -B(t,T)P_t(T) \sigma dW_t
-        \end{split}
-        \end{equation*}
-        In order to evaluate the convexity adjustment shown in the first section, the following process must be defined:
-        $$\frac{P_t(t_k)}{P_t(t_{k+1})} = e^{A(t,t_k)-A(t,t_{k+1})-[B(t,t_k)-B(t,t_{k+1})]r_t}$$
-        From Ito's Lemma it can be derived the following Q-dynamic for the process above:
-        
-        \begin{equation*}
-        \begin{split}
-        d\left( \frac{P_t(t_k)}{P_t(t_{k+1})} \right) &= \frac{1}{P_t(t_{k+1})} dP_t(t_k) - \frac{P_t(t_k)}{P_t^2(t_{k+1})} dP_t(t_{k+1})
-        + \frac{1}{2} \bigg( 2 \frac{P_t(t_k)}{P_t^3(t_{k+1})} \bigg) dP_t^2(t_{k+1}) +\\
-        &- \frac{1}{P_t^2(t_{k+1})} dP_t(t_k) dP_t(t_{k+1}) \\
-        d\left( \frac{P_t(t_k)}{P_t(t_{k+1})} \right) &= \bigg[r_t dt -B(t,t_k) \sigma dW_t \bigg] \frac{P_t(t_k)}{P_t(t_{k+1})}
-        -\bigg[r_t dt -B(t,t_{k+1}) \sigma dW_t \bigg] \frac{P_t(t_k)}{P_t(t_{k+1})} +\\
-        &+ B^2(t,t_{k+1}) \sigma^2 \frac{P_t(t_k)}{P_t(t_{k+1})} dt
-        - B(t,t_k)B(t,t_{k+1}) \sigma^2 \frac{P_t(t_k)}{P_t(t_{k+1})} dt \\
-        d\left( \frac{P_t(t_k)}{P_t(t_{k+1})} \right) &= \sigma^2 B(t,t_{k+1}) \bigg[ B(t,t_{k+1}) - B(t,t_k) \bigg] \frac{P_t(t_k)}{P_t(t_{k+1})} dt +\\
-        &+ \sigma \bigg[ B(t,t_{k+1}) -B(t,t_k) \bigg] \frac{P_t(t_k)}{P_t(t_{k+1})} dW_t
-        \end{split}
-        \end{equation*}
-        Moving to the $T_p$-forward measure (where $T_p$ is the coupon payment date), we have $ dW_t = dW_t^{T_p} - \sigma B(t,T_p) dt $ and so the $T_p$-dynamic is:
-        
-        \begin{equation*}
-        \begin{split}
-        d\left( \frac{P_t(t_k)}{P_t(t_{k+1})} \right) 
-        &= \sigma^2 \bigg[ B(t,t_{k+1}) - B(t,T_p) \bigg] \bigg[ B(t,t_{k+1}) - B(t,t_k)\bigg] \frac{P_t(t_k)}{P_t(t_{k+1})} dt \\
-        &+ \sigma \bigg[ B(t,t_{k+1}) - B(t,t_k) \bigg] \frac{P_t(t_k)}{P_t(t_{k+1})} dW_t^{T_p}
-        \end{split}
-        \end{equation*}
-        It is then possible to evaluate the following:
-        
-        \begin{equation*}
-        \begin{split}
-        E^{T_p} \bigg[ \frac{P_t(t_k)}{P_t(t_{k+1})} \bigg] 
-        &= \frac{P_0(t_k)}{P_0(t_{k+1})} \exp \bigg\{ \int_0^t \sigma^2 \bigg[ B(s,t_{k+1}) - B(s,T_p) \bigg] \bigg[ B(s,t_k) - B(s,t_{k+1}) \bigg] ds \bigg\} \\
-        &= \frac{P_0(t_k)}{P_0(t_{k+1})} \exp \bigg\{ \frac{\sigma^2}{a^2} \int_0^t \bigg[ e^{-a(t_{k+1}-s)} - e^{-a(T_p-s)} \bigg] \bigg[ e^{-a(t_k-s)} - e^{-a(t_{k+1}-s)} \bigg] ds \bigg\}\\
-        &= \frac{P_0(t_k)}{P_0(t_{k+1})} \exp \bigg\{ \frac{\sigma^2}{a^2} \int_0^t e^{2a s} \bigg[ e^{-a t_{k+1}} -e^{-a T_p} \bigg] \bigg[ e^{-a t_k} - e^{-a t_{k+1}} \bigg] ds \bigg\}\\
-        &= \frac{P_0(t_k)}{P_0(t_{k+1})} \exp \bigg\{ \frac{\sigma^2}{2a^3} \bigg( e^{2a t} -1 \bigg) \bigg[ e^{-a t_{k+1}} -e^{-a T_p} \bigg] \bigg[ e^{-a t_k} - e^{-a t_{k+1}} \bigg] \bigg\}
-        \end{split}
-        \end{equation*}\\
-        
-        Therefore, the convexity adjustment $ConvAdj$ can be defined due to the delayed payment of the coupon as:
-        
-        \begin{equation*}
-        ConvAdj(t) = \exp \bigg\{ \frac{\sigma^2}{2a^3} \bigg( e^{2a t} -1 \bigg) \bigg[ e^{-a t_{k+1}} -e^{-a T_p} \bigg] \bigg[ e^{-a t_k} - e^{-a t_{k+1}} \bigg] \bigg\}
-        \end{equation*}\\
-        Another approach suggested in \cite{java} is to approximate the arithmetic average through the geometric one in order to use the telescoping property and simplify the computation. If $x$ is small, it is possible to set $ x = \log (1+x) + c(x)$, so, from the first section, it can be derived:
-        \begin{equation*}
-        \begin{split}
-        C(t_0,T_p^i) &=E^Q \bigg[D(t_0,T_p^i) \sum_{k=h}^{T_p^i} \tau(t_k,t_{k+1}) L^{ON}(t_k,t_{k+1}) \bigg] \\
-        &=E^Q \bigg[D(t_0,T_p^i) \sum_{k=h}^{T_p^i} \log\bigg(1+ \tau(t_k,t_{k+1}) L^{ON}(t_k,t_{k+1}) \bigg) + c(t_k) \bigg] \\
-        &=E^Q \bigg[D(t_0,T_p^i) \bigg\{\log\bigg(\prod_{k=h}^{T_p^i} 1+ \tau(t_k,t_{k+1}) L^{ON}(t_k,t_{k+1}) \bigg) + ConvAdj_1 \bigg\} \bigg] \\
-        &=E^Q \bigg[D(t_0,T_p^i) \bigg\{\log \bigg( \frac{P(t_h,t_h)}{P(t_h,T_p^i)}  \bigg) +ConvAdj_1 \bigg\} \bigg] \\
-        &= P(t_0,T_p^i) \bigg\{\log \bigg( \frac{P(t_0,t_h)}{P(t_0,T_p^i)} \bigg) +ConvAdj_1+ConvAdj_2 \bigg\}
-        \end{split}
-        \end{equation*}\\
-        This is the geometric approximation for the arithmetic-average coupon OIS fair rate.
+        By means of the synthetic instrument above, the USD overnight curve bootstrap can be performed now deriving the equilibrium spread $S_T$ and without the USD Libor 3M forwarding term structure. Therefore, this simplification allows a standard basis swaps bootstrap.\\
+        Including the Arithmetic Fed Funds OIS in the calibration has a good impact on USDON curve smoothness as visible in the next two figures.
         
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.7\textwidth]{images/convexity.png}
-        \caption{Convexity adjustment impact (bps) over 30Y arithemtic-average coupon OIS fair rate for different values of ($a,\sigma$). The Red point is the value for calibrated parameters (see next section).}
-        \label{fig:convexity}
+        \includegraphics[width=0.7\textwidth]{images/metaoiscurve.png}
+        \caption{The USD overnight curve shape without Arithmetic OIS.}
+        \label{fig:metaoiscurve}
         \end{figure}
         
-        \subsection{Model Calibration} \label{subsection:3.4.6}
-        Now that the convexity adjustment formula is defined, it is necessary to choose the parameters of the HW model (speed of mean reversion $a$ and annual volatility $\sigma$). As visible in Figure \ref{fig:convexity}, the impact of the parameters on the convexity adjustment could be not negligible.
-        A good approach could be to calibrate parameters in order to bootstrap a curve coherent with the standard compounded OIS quotes. Suppose to bootstrap an OIS curve using arithmetic-average coupon OIS without convexity (quotes from 1Y to 10Y, 12Y, 15Y, 20Y, 25Y, 30Y). Then use this curve to price fair rates of the corresponding standard compounded OIS. Comparing the results with the compounded OIS market quotes, a strip of repricing errors increasing in the maturities emerges (blue points in Figure \ref{fig:reperrors}).
-        The first idea is then to find the parameters such that the curve bootstrapped through arithmetic-average coupon OIS (using the convexity adjustment) reprices compounded OIS fair rates as good as possible but , unfortunately, this approach is computationally heavy. Another way could be instead to bootstrap an OIS curve through compounded OIS, then keeping the curve fixed, evaluate the arithmetic-average coupon OIS fair rates (using the convexity adjustment) and then look for the parameters that minimize the repricing errors between the evaluated fair rates and the market quotes. Proceeding in this way, a couple of optimal parameters can be founded. Now it is possible to bootstrap again the OIS curve through arithmetic-average coupon OIS with convexity adjustment. In Figure \ref{fig:reperrors} is shown how the compounded OIS repricing errors (red points) are minimized.\\
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/aithmeticcurve.png}
+        \caption{The impact of including Arithmetic Fed Funds OIS in the curve calibration.}
+        \label{fig:arithmeticcurve}
+        \end{figure}
         
-       \begin{figure}[!h]
-       \centering
-       \includegraphics[scale=0.5]{images/reperrors.png}
-       \caption{Compounded OIS fair rates repricing errors using a curve bootstrapped through arithmetic-average coupon OIS with convexity  adjustment (red) or not (blue).}
-       \label{fig:reperrors}
-       \end{figure}
+        \newpage
+        The Arithmetic basis does not exists for tenor less than one year; in fact the impact o the curve's shape is visible from one year after the settlement date and involves a smoother shape.
+        
         
 %%%CONCLUSION%%%
 
@@ -971,11 +925,13 @@ This devoted to introduce some basic and fundamental interest rate rule in order
 
 \bibitem{hyman} J.M.~Hyman, {\em Accurate monotonicity preserving cubic interpolation}, SIAM Journal on scientific and statistical computing, 4(4):645-654, 1983.\\
 
-\bibitem{java} K.~Takada, {\em Valuation of Arithmetic Average of Fed Funds Rates and Construction of the US dollar Swap Yield Curve}, http://www.javaquant.net/papers/AverageIndexSwap.pdf , September 2011.\\
+\bibitem{takada} K.~Takada, {\em Valuation of Arithmetic Average of Fed Funds Rates and Construction of the US dollar Swap Yield Curve}, http://www.javaquant.net/papers/AverageIndexSwap.pdf , September 2011.\\
 
 \bibitem{ECB} {\em European Central Bank, schedules for the meetings of the Governing Council}, http://www.ecb.europa.eu/events/calendar/mgcgc/html/index.en.html.
 
 \bibitem{hull} J.C.~Hull, {\em Option, Futures and Other Derivatives ($8^{th}\mbox{edition}$)}, Prentice Hall, Cap.30-Pag.682, 2012.\\
+
+\bibitem{hullwhite} J.~Hull, A. ~White, {\em Valuing derivatives securities using the explicit finite difference method}, Journal of Financial and Quantitative Analysis, Volume 25, Issue 1, 87-100, March 1990.\\
 
 \end{thebibliography}
 
