@@ -593,15 +593,13 @@ This chapter wants to focus on overnight curve construction passing through ever
         \\
         Assuming simple compounding:\\
         
-        $$ \mbox{{\it Stub}} = \frac{[\frac{(1+F\ped{0 x t\ped{3}} \cdot \tau\ped{0 x t\ped{3}})}{(1+F\ped{0 x t\ped{1}} \cdot \tau\ped{0 x t\ped{1}}) \cdot (1+F\ped{t\ped{2} x t\ped{3}} \cdot \tau\ped{t\ped{2} x t\ped{3}})}-1]}{\tau\ped{t\ped{1} x t\ped{2}}}$$\\
-        Introducing in the calibration this forward Stub improve consistently the overnight curve goodness avoiding unwanted distortion and oscillation as will be shown in next section. Otherwise, this solution can be implemented only if the bootstrap algorithm uses a log-linear interpolation for the short-term section of the curve. Interpolating log-linearly the overnight curve becomes piecewise constant, as seen in \ref{subsection:1.3.1}, and this assumption permits to derive the $e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds}$ value that must be equal to ECB OIS market quote. The good news is that, as seen in \ref{section:3.1.4}, the best practise to interpolate the ON curve is by means of a mixed interpolation, which interpolates log-linearly the short term section of the curve. It is also important to underlying that the Stub algorithm produces good results also in limit cases as, for example, when $\tau\ped{t\ped{1} x t\ped{2}} \longrightarrow \frac{1}{365}$ that represents the particular case in which the Stub quote duration is just 1 day.\\
+        $$ \mbox{{\it Stub}} = \frac{\left[\frac{(1+F(0,t\ped{3}) \cdot \tau(0,t\ped{3}))}{(1+F(0,t\ped{1}) \cdot \tau(0,t\ped{1})) \cdot (1+F(t\ped{2},t\ped{3}) \cdot \tau(t\ped{2},t\ped{3}))}-1\right]}{\tau(t\ped{1},t\ped{2})}$$\\
+        Introducing in the calibration this forward Stub improve consistently the overnight curve goodness avoiding unwanted distortion and oscillation as will be shown in next section. Otherwise, this solution can be implemented only if the bootstrap algorithm uses a log-linear interpolation for the short-term section of the curve. Interpolating log-linearly the overnight curve becomes piecewise constant, as seen in \ref{subsection:1.3.1}, and this assumption permits to derive the $e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds}$ value that must be equal to ECB OIS market quote. The good news is that, as seen in \ref{subsection:3.1.4}, the best practise to interpolate the ON curve is by means of a mixed interpolation, which interpolates log-linearly the short term section of the curve. It is also important to underlying that the Stub algorithm produces good results also in limit cases as, for example, when $\tau(t\ped{1},t\ped{2}) \longrightarrow \frac{1}{365}$ that represents the particular case in which the Stub quote duration is just 1 day.\\
         Finally, during a year, there surely happen a particular scenario in which, since the first ECB OIS fixing becomes earlier and earlier, the discarded spot instruments is the first spot starting
-        OIS. This case implies that the so called "forward Stub" it is not forward start anymore because it becomes a spot instrument which covers the year fraction: $\tau\ped{0 x t\ped{1}}$ (where $t\ped{1}$ is the first ECB OIS fixing date).
-        
+        OIS. This case implies that the so called "forward Stub" it is not forward start anymore because it becomes a spot instrument which covers the year fraction: $\tau(0,t\ped{1})$ (where $t\ped{1}$ is the first ECB OIS fixing date).
         \newpage
         In this case, the "spot stub" implied value is:
-        
-         $$ \mbox{{\it Stub}} = \frac{[\frac{1+F\ped{0 x t\ped{2}} \cdot \tau\ped{0 x t\ped{2}}}{1+F\ped{t\ped{1} x t\ped{2}} \cdot \tau\ped{t\ped{1} x t\ped{2}})}-1]}{\tau\ped{t\ped{0} x t\ped{1}}}$$
+        $$ \mbox{{\it Stub}} = \frac{\left[\frac{1+F(0,t\ped{2}) \cdot \tau(0,t\ped{2})}{1+F(t\ped{1},t\ped{2}) \cdot \tau(t\ped{1},t\ped{2})}-1\right]}{\tau(t\ped{0},t\ped{1})}$$
         
         \subsection{Impact on Curve and Repricing Errors} \label{subsection:3.2.2}
         In the previous section it has been presented a particular ON curve problem and 3 possible ways to solve it. Let's start from the worst one, namely the solution in which the overlapping instrument is excluded leaving a non-covered curve's section. With this approach the curve obtained is represented in the underlying figure:\\
@@ -749,7 +747,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.7\textwidth]{images/convexity2.png}
+        \includegraphics[width=0.8\textwidth]{images/convexity2.png}
         \caption{Also without volatility it emerges another kind of convexity in the two payoffs.}
         \label{fig:convexity2}
         \end{figure}
@@ -757,7 +755,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         
         $$ConvAdj_1 = R_f^{OIS}(0;t\ped{1},t\ped{2}) - \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2}))$$
         This is the convexity correction shown in the previous figure. The other convexity adjustment is, instead, dynamic since it is caused by the forward OIS rate volatility and its value is:
-        $$ConvAdj_2 = \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2})) - R_f^{OIS}(0;t\ped{1},t\ped{2})$$
+        $$ConvAdj_2 = \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2})) - R_f^{Arithm}(0;t\ped{1},t\ped{2})$$
         The valuation of this second correction term could be performed taking advantage of an Hull \& White short rate model (for more information see \cite{hullwhite}) but its derivation is outside the purposes of this work.
     
         \subsection{Bootstrap methodology and impact on USDON curve} \label{subsection:3.4.4}
@@ -774,7 +772,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \begin{equation*}
         \begin{split}
         \sum_{i=1}^{N} \tau(t\ped{i-1},t\ped{i})R_T^{3M}D(0,t\ped{i}) = 
-        \sum_{i=1}^{N} V^{Arithm}(t\ped{i-1},t\ped{i}) + \tau(t\ped{i-1},t\ped{i})S_TD(0,t\ped{i}))
+        \sum_{i=1}^{N} (V^{Arithm}(t\ped{i-1},t\ped{i}) + \tau(t\ped{i-1},t\ped{i})S_TD(0,t\ped{i}))
         \end{split}
         \end{equation*}
         By means of the synthetic instrument above, the USD overnight curve bootstrap can be performed now deriving the equilibrium spread $S_T$ and without the USD Libor 3M forwarding term structure. Therefore, this simplification allows a standard basis swaps bootstrap.\\
@@ -795,7 +793,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{figure}
         
         \newpage
-        The Arithmetic basis does not exists for tenor less than one year; in fact the impact o the curve's shape is visible from one year after the settlement date and involves a smoother shape.
+        The Arithmetic basis swaps does not exist for tenor less than one year; in fact the impact on the curve is visible from one year after the settlement date and consists in a smoother shape.
         
         
 %%%CONCLUSION%%%
