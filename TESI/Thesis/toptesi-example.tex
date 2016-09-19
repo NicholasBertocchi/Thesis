@@ -377,10 +377,10 @@ This chapter wants to focus on overnight curve construction passing through ever
 \chapter{Improving Overnight Curve} \label{chap:3}
     \section{Defining the best Interpolation Method}\label{section:3.1}
     All requirements to present some of the most popular interpolation techniques (i.e. quantity to be interpolated plus an interpolation scheme) have been already discussed in Section \ref{section:1.3}; let's introduce them stressing on every pros and cons.\\
-    Since each simple forward rate is approximately the integral of instantaneous forward rates, the smoothness of simple forward rates will be analyzed computing instantaneous forward rates. The starting point is a set of known curve's points $\left\{ (t_{i},y_{i}=y(t_{i}))\right\}_{i=1,...,N}$ where $y$ represent the quantity to be interpolated as defined above. $t_{0}$ will be the reference date.
+    Since each simple forward rate is approximately the integral of instantaneous forward rates, the smoothness of simple forward rates will be analyzed computing instantaneous forward rates. The starting point is a set of known curve's points $\left\{ (t_{i},y_{i}=y(t_{i}))\right\}_{i=1,...,N}$ where $y$ represent the quantity to be interpolated as already defined. $t_{0}$ will be the reference date.
         
         \subsection{Linear and Log-Linear interpolation} \label{subsection:3.1.1}
-        This is a poor and simple way to interpolate that can be computed directly on zero rates (Linear) or on log-discounts (log-linear). For $t \in [t_{i-1}, t_{i}]$ the piecewise linear interpolation formula for zero rates is:\\
+        This is a poor and simple way to interpolate quantities that can be computed directly on zero rates (Linear) or on log-discounts (log-linear). For $t \in [t_{i-1}, t_{i}]$ the piecewise linear interpolation formula for zero rates is:\\
         
         $$z(t)t=\frac{t-t_{i-1}}{t_{i}-t_{i-1}}z(t_{i})t+\frac{t_{i}-t}{t_{i}-t_{i-1}}z(t_{i-1})t$$\\
         This kind of interpolation techniques produces the so called: "Sawtooth forward rates" as visible in Figure \ref{fig:sawtooth} and \ref{fig:piecewiselinear}: \\
@@ -400,8 +400,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{figure}
         
         \newpage
-        Obviously, this is not a good way to interpolate quantitites; forward rates are far to be smooth and curve shape is quite improbable.
-        In the log-discount case, instead, the interpolation formula becomes:\\
+        Obviously, this is not a good way to interpolate; forward rates are far to be smooth and curve shape is quite improbable. In the log-discount case, instead, the interpolation formula becomes:\\
         \\
         $$z(t)t=-\ln P(t)=-\frac{t-t_{i-1}}{t_{i}-t_{i-1}}\ln P(t_{i})-\frac{t_{i}-t}{t_{i}-t_{i-1}}\ln P(t_{i-1})$$\\
         \\
@@ -470,7 +469,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{figure}
         
         \subsection{Monotonic Cubic Natural Spline interpolation: The Hyman Scheme} \label{subsection:3.1.3}
-        Cubic spline interpolation methods suffer of well-documented problems, such as spurious inflection points, excessive convexity, lack of locality and wide oscillation that can generate negative forward rates.
+        As sad before, interpolate with a Cubic spline leads to different problems like spurious inflection points, excessive convexity, lack of locality and wide oscillation that can generate negative forward rates.
         The Hyman's method or {\it Hyman filter} (see \cite{hyman}) attempts to address traditional cubic spline problems in a different way and, as the Figure \ref{fig:stresscase} suggest, can produce smoother forward rates avoiding the issues listed above.
         
         \begin{figure}[!h]
@@ -498,7 +497,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         
         \newpage
         \subsection{Mixed Interpolation} \label{subsection:3.1.4}
-        Summing up, it has been previously discussed that the overnight case is the only one where curve's smoothness is not strictly required in the short therm section because market evidence shows that the overnight curve tends to be piecewise constant between ECB monetary policy meeting dates (generally till 1 year and a half from spot date). The best way to replicate this kind of behaviour, as seen in \ref{subsection:3.1.1} is to use a Log-Linear interpolation which produces flat forwards between pillars. After the last ECB dated OIS, however, assuming a piecewise constant curve is no more reasonable; so it becomes necessary to use again an interpolation technique which produces smooth forward rates (like the cubic splines discussed in \ref{subsection:3.1.2} and \ref{subsection:3.1.3}). Since using a Log-Linear or a Cubic interpolation for the whole curve leads, in both cases, to distortions, the best way to model the overnight curve behaviour is by means of {\itshape Mixed Interpolation} which, as the same suggest, permits to mash two kind of interpolation following two different methods:
+        Summing up, it has been previously discussed that the overnight case is the only one where curve's smoothness is not strictly required in the short therm section because market evidence shows that the overnight curve tends to be piecewise constant between ECB monetary policy meeting dates (generally till 1 year and a half from spot date). The best way to replicate this kind of behaviour, as seen in \ref{subsection:3.1.1} is to use a Log-Linear interpolation which produces flat forwards between pillars. After the last ECB dated OIS, however, assuming a piecewise constant curve is no more reasonable; so it becomes necessary to use again an interpolation technique which produces smooth forward rates (like the cubic splines discussed in \ref{subsection:3.1.2} and \ref{subsection:3.1.3}). Since using a Log-Linear or a Cubic interpolation for the whole curve leads, in both cases, to distortions, the best way to model the overnight curve behaviour is by means of {\itshape Mixed Interpolation} which, as the name suggest, permits to mash two kind of interpolation following two different methods:
         
         \begin{itemize}
             \item The {\itshape Split Range} approach which consists in interpolate till a pre-determined pillar (from now called the {\itshape Switch Pillar}) using an interpolation technique and to interpolate using another techniques after that.
@@ -524,7 +523,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{figure}
         
         \newpage
-        As visible in the previous figures the two approaches produce a very similar behaviour. Finally, a repricing error analysis is shown in Figure \ref{fig:repricingmixed}.  \\
+        As visible in the previous figures the two approaches produce a very similar behaviour. Finally, a repricing error analysis is shown in Figure \ref{fig:repricingmixed}. \\
         
         \begin{figure}[!h]
         \centering
@@ -573,7 +572,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{itemize}
 
         \subsection{Implied value calculation} \label{subsection:3.2.1}
-        Let's suppose now to be in the situation described in Figure \ref{fig:exclude} in which there is a not covered curve's section. The Stub quote represents a forward rate which starts from the last not-overlapping instrument's (in the previous example the OIS1M) maturity date and ends in the first ECB Dated settlement date.\\
+        Let's suppose now to be in the situation described in Figure \ref{fig:exclude} in which there is a not covered curve's section. The Stub quote represents a forward rate which starts from the last not-overlapping instrument's (the OIS1M) maturity date and ends in the first ECB Dated settlement date.\\
         
         \begin{figure}[!h]
         \centering
@@ -618,7 +617,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \end{figure}
         
         \newpage
-        This solution's big problem is that the bootstrap algorithm extrapolate backward from ECB Dated market quote the non-covered curve's part leading to high distortions especially when preceding instrument and ECB OIS quotes are distant.\\
+        This solution's big problem is that the bootstrap algorithm extrapolate backward from ECB Dated market quote the non-covered part of the curve leading to high distortions especially when preceding instrument and ECB OIS quotes are distant.\\
         A better solution can be including all spot starting OIS even if one of them will certainly be overlapping. This approach is described in next figure:\\
         
         \begin{figure}[!h]
@@ -635,7 +634,7 @@ This chapter wants to focus on overnight curve construction passing through ever
         \caption{ON Curve including forward Stub (Evaluation date 2 February 2016).}
         \label{fig:stubcurve}
         \end{figure}
-        As visible, there are no wide oscillation in the curve's shape and the repricing errors analysis, represented in Figure \ref{fig:errors}, shows that this approach is the one which minimize all out-of-curve instruments, ensuring also the perfect reprice of the overlapping instrument excluded.\\
+        As visible, there are no wide oscillation in the curve's shape and the repricing errors analysis, represented in Figure \ref{fig:repricingimage} and \ref{fig:errors} , shows that this approach is the one which minimize all out-of-curve instruments, ensuring also the perfect reprice of the overlapping instrument excluded.\\
         
         \begin{figure}[!h]
         \centering
@@ -654,10 +653,10 @@ This chapter wants to focus on overnight curve construction passing through ever
     \newpage    
     \section{Jump estimation} \label{section:3.3}
     As already discussed in previous chapters, the key point in a state-of-the-art bootstrapping is to obtain smooth forward rates.
-    In order to do that, for even the best interpolation scheme to be effective, any market rate must be removed before the curve calibration and than added back at the end of the process.
+    In order to do that, for even the best interpolation scheme to be effective, any market jump must be removed before the curve calibration and than added back at the end of the process.
     
        \subsection{The EUR market case: Positive Jumps} \label{subsection:3.3.2}
-       A rate jump can be seen, in a financial point of view, as a higher index fixing due to increased search of liquidity of market participants caused by end-of-month or end-of-year capital requirements. This definition is good for the EUR case in which market evidence shows positive jumps. 
+       A rate jump can be seen, in a financial point of view, as a higher index fixing due to increased search of liquidity of market participants caused by end-of-month or end-of-year capital requirements. This definition is good for the EUR case in which market evidence shows positive jumps as visible in the figure below.
        
        \begin{figure}[!h]
        \centering
@@ -665,10 +664,10 @@ This chapter wants to focus on overnight curve construction passing through ever
        \caption{December 2014 turn of year effect shown on Bloomberg terminal.}
        \label{fig:turnofyear}
        \end{figure}
-       However, it is not consistent for the U.S. case in which market evidence shows negative jumps and so American markets participants tend to have a decreasing necessity of liquidity every end-of-month. The most relevant rate jump is the so called {\it Turn-Of-Year} (TOY) effect observable in the last working day in market quotations spanning across the end of the year. Other Euribor indexes with longer tenor display smaller jumps when their maturity crosses the same border, in fact it is visible that the jumps amplitude decrease as the rate tenor increase.\\
-       To estimate jumps sizes Ametrano and Mazzocchi (\cite{amemaz}) propose an approach similar to the one used by Burghardt (\cite{burgh}):
+       However, this definition is not consistent for the U.S. case in which market evidence shows negative jumps and so American market participants tend to have a decreasing necessity of liquidity every end-of-month. The most relevant rate jump is the so called {\it Turn-Of-Year} (TOY) effect observable in the last working day in market quotations spanning across the end of the year. Other Euribor indexes with longer tenor display smaller jumps when their maturity crosses the same border; in fact jumps amplitude decrease as the rate tenor increase.\\
+       To estimate jumps sizes Ametrano and Mazzocchi (\cite{amemaz}) propose a four-step approach similar to the one used by Burghardt (\cite{burgh}):
        \begin{enumerate}
-           \item The first step is to built an overnight curve calibrating by means of a linear/flat interpolation and including all liquid market quotes available (high pillar density improve the analysis); 
+           \item The first step is to built an overnight curve calibrating by means of a linear/flat interpolation and including all liquid market quotes available (high pillar density is strictly recommended); 
            \item After that it is possible to estimate the first jump assuming that a segment out of line with preceding and following segments can be put back in line dumping the difference into the jump:
            $$\left[F^{Original}(t\ped{1},t\ped{2}) - F^{Interp}(t\ped{1},t\ped{2})\right] \cdot \tau(t\ped{1},t\ped{2}) = J^{Size}*\tau^{J}$$
            \item Ones the first jumps as been estimated it is possibile to remove it from the curve;
@@ -699,17 +698,22 @@ This chapter wants to focus on overnight curve construction passing through ever
         \caption{The same curve in Figure \ref{fig:firstjumpeur1} including the first positive jump.}
         \label{fig:firstjumpeur2}
         \end{figure}
+        As visible, the short term section of the curve is changed due the fact that the first jumps has been accounted. To preserve the value of the instantaneous forward rate integral in that section, the calibration algorithm pushes down all the segment changing the curve shape.
         
         \newpage
         \subsection{The USD market case: Negative Jumps}
-        Moving to the USD market the situation looks inverted. In fact, as visible in Figure \ref{fig:bloombergusd}, the Fed Funds fixings shows negative jumps every end-of-month and with a particular deep size. In a financial point of view this is due to the excess of liquidity that market participants hold at the end of each month and want to sell.  
+        Moving to the USD market, the situation looks inverted. In fact, as visible in Figure \ref{fig:bloombergusd}, the Fed Funds fixings shows negative jumps every end-of-month and with a particular deep size. In a financial point of view this is due to the excess of liquidity that market participants hold and want to sell at the end of each month. This behaviour tends to be constant during time, in fact, in the last two years, the Fed Funds time series shows negative jumps every end-of-month with no exceptions and this leads to a good predictability of this phenomenon.\\  
         
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.65\textwidth]{images/bloombergusd.png}
+        \includegraphics[width=0.75\textwidth]{images/bloombergusd.png}
         \caption{Fed Funds fixings time series on Bloomberg terminal.}
         \label{fig:bloombergusd}
         \end{figure}
+        To estimate this kind of jumps, however, the Ametrano-Mazzocchi approach for the EUR market case must be reviewed so that it can account negative sizes. In particular the formula at point 2 becames:
+        
+        $$\left[F^{Interp}(t\ped{1},t\ped{2}) - F^{Original}(t\ped{1},t\ped{2})\right] \cdot \tau(t\ped{1},t\ped{2}) = J^{Size}*\tau^{J}$$\\
+        Applying the same procedure but using the reviewed formula it is now possible to make an estimation of the USD jumps and account them in the USD overnight curve as the next two figure show.
         
         \begin{figure}[!h]
         \centering
@@ -725,28 +729,23 @@ This chapter wants to focus on overnight curve construction passing through ever
         \label{fig:firstjumpusd2}
         \end{figure}
         
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.8\textwidth]{images/usdcurvenojump.png}
-        \caption{First two year section of the USD overnight curve without jumps.}
-        \label{fig:usdcurvenojump}
-        \end{figure}
-    
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.8\textwidth]{images/usdcurvejump.png}
-        \caption{The different shape caused by first jump inclusion.}
-        \label{fig:usdcurvejump}
-        \end{figure}
+        \newpage
+        It is clear that, since the piecewise flat steps of the curve are given by market quotes which are the integral of instantaneous forward rates between an interval $(t\ped{1},t\ped{2})$, if this integral must account a deep below level point, the residual part is shifted up in order to maintain the integral value equal.\\
+        To analyze the impact of the first jump inclusion the Figure \ref{fig:repricingjump} shows how some out-of-curve instruments with short, medium and long tenor are re-priced including or not the first jump. 
         
-        \label{subsection:3.3.3}
-    
-    \newpage   
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.50\textwidth]{images/repricingjump.png}
+        \caption{Re-pricing errors in Bps between different tenors OIS market quotes and the same instruments derived from the USD overnight curve calibrated.}
+        \label{fig:repricingjump}
+        \end{figure}
+        As expected, the strongest impact is on the short term section in which market OIS are re-priced much better meanwhile, on longer tenors, the benefits are less considerable.
+
     \section{Fed Funds Arithmetic Average Coupon OIS} \label{section:3.4}
-    From the previous section the subject have been moved to foreign currency overnight curve calibration. This part aims to discuss how the US dollar overnight yield curve (USDON) can be improved including in the bootstrap the Fed Funds (FF) arithmetic OIS instead of the simple OIS indexed to the Fed Funds rate. This is a recommendable practice due to the fact that arithmetic OIS are traded in the dealer's market more actively and so, fore the liquidity criteria discussed in \ref{section:2.1}, it is better to include them in the calibration algorithm.
+    From the previous section the subject have been moved to U.S. Dollar overnight yield curve calibration. This part aims to discuss how the USD overnight (USDON) curve can be improved including in the bootstrap the Fed Funds (FF) arithmetic OIS instead of the simple OIS indexed to the Fed Funds rate. This is a recommendable practice due to the fact that arithmetic OIS are traded in the dealer's market more actively and so, fore the liquidity criteria discussed in \ref{section:2.1}, it is better to include them in the calibration algorithm.
     
         \subsection{Fed Funds OIS Vs. Arithmetic-LIBOR basis swap} \label{subsection:3.4.1}
-        FF-OIS, as already discussed in \ref{subsection:2.1.2}, are particular IRS which floating-leg pays the daily compounded FF rate. In a interest rate basis swap (IRBS), instead, two different floating rates in the same currency are exchanged which can be, for example, two LIBORs with different tenors. Arithmetic-LIBOR, so, are basis swaps which exchange the FF rate on a leg and a LIBOR rate on the other. In derivative products like swaps the FF rates, as the EUR overnight ones, are never paid on a daily basis but paid collectively in a single coupon. The difference between FF-OIS and Arithmetic-LIBOR basis swaps is that, while in FF-OIS coupons are done on a daily compounded basis, in Arithmetic-LIBOR basis swaps are built doing an arithmetic average. This calculation difference leads to some complications which implies two convexity adjustment which derivation will be discuss Section \ref{subsection:3.4.5}.\\
+        FF-OIS, as the EUR-OIS already discussed in \ref{subsection:2.1.2}, are particular IRS which floating-leg pays the daily compounded FF rate. In a interest rate basis swap (IRBS), instead, two different floating rates in the same currency are exchanged which can be, for example, two LIBORs with different tenors. Arithmetic-LIBORs, so, are basis swaps which exchange the FF rate on a leg and a LIBOR rate on the other. In derivative products like swaps the FF rates, as the EUR overnight ones, are never paid on a daily basis but paid collectively in a single coupon. The difference between FF-OIS and Arithmetic-LIBOR basis swaps is that, while in FF-OIS coupons are done on a daily compounded basis, in Arithmetic-LIBOR basis swaps are built doing an arithmetic average. This calculation difference leads to some complications which implies two convexity adjustment which derivation is out of this work objects and will be briefly introduced later.\\
         Expressing the previous concept in formulas, it is possible to define the daily compounded FF-OIS rate for the period $(t\ped{1},t\ped{2})$ as:
         
         $$R^{OIS}(t\ped{1},t\ped{2}) = \frac{1}{\tau(t\ped{1},t\ped{2})} \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]$$\\
@@ -762,13 +761,13 @@ This chapter wants to focus on overnight curve construction passing through ever
         \subsection{Fed Funds OIS and Arithmetic-LIBOR basis swap valuation} \label{subsection:3.4.2}
         Denoting as $D(t,T)$ the value at maturity $T$ of a collateralized Bond, its payoff can be defined as the conditional expectation at time $T$, under a proper risk-neutral measure $M$, of the average risk-free rate which, for all collateralized interest rate derivatives, can be substituted with the overnight rate (see \cite{hull} for more details). In formula:
         
-        $$D(t,T) = E^{M}\ped{t} \left[e^{-\int_t^T r(u)du}\right]$$
+        $$D(t,T) = E^{M}\ped{t} \left[e^{-\int_t^T \bar{r}(u)du}\right]$$
         This permits to express the value $V(t,T)$ of a collateralized FF-OIS over the accrual period $(t\ped{1},t\ped{2})$ as:
         
         \begin{equation*}
         \begin{split}
-        V^{OIS}(t\ped{1},t\ped{2}) &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \tau(t\ped{1},t\ped{2})R^{OIS}(t\ped{1},t\ped{2})\right] \\
-        &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]\right] \\
+        V^{OIS}(t\ped{1},t\ped{2}) &= E^M \left[e^{-\int_0^{t\ped{2}} \bar{r}(u)du} \tau(t\ped{1},t\ped{2})R^{OIS}(t\ped{1},t\ped{2})\right] \\
+        &= E^M \left[e^{-\int_0^{t\ped{2}} \bar{r}(u)du} \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]\right] \\
         &= D(0,t\ped{1})-D(0,t\ped{2})\\
         \end{split}
         \end{equation*}
@@ -779,13 +778,13 @@ This chapter wants to focus on overnight curve construction passing through ever
     
         \begin{equation*}
         \begin{split}
-        V^{Arithm}(t\ped{1},t\ped{2}) &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \tau(t\ped{1},t\ped{2})R^{Arithm}(t\ped{1},t\ped{2})\right] \\
-        &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \left[\prod_{k=1}^{K} \tau\ped{k}r\ped{k}\right]\right] \\
-        &\approx E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \int_{t\ped{1}}^{t\ped{2}} r(u)du\right] \\
-        &= D(0,t\ped{2})E^{t\ped2}\left[\int_{t\ped{1}}^{t\ped{2}} r(u)du\right]
+        V^{Arithm}(t\ped{1},t\ped{2}) &= E^M \left[e^{-\int_0^{t\ped{2}} \bar{r}(u)du} \tau(t\ped{1},t\ped{2})R^{Arithm}(t\ped{1},t\ped{2})\right] \\
+        &= E^M \left[e^{-\int_0^{t\ped{2}} \bar{r}(u)du} \left[\prod_{k=1}^{K} \tau\ped{k}r\ped{k}\right]\right] \\
+        &\approx E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \int_{t\ped{1}}^{t\ped{2}} \bar{r}(u)du\right] \\
+        &= D(0,t\ped{2})E^{t\ped2}\left[\int_{t\ped{1}}^{t\ped{2}} \bar{r}(u)du\right]
         \end{split}
         \end{equation*}
-        Where the collateralized Bond value $D(0,t\ped{2})$ with maturity $t\ped{2}$ is the numeraire which permits to move in a forward risk neutral world and $e^{-\int_0^{t\ped{2}} r(u)du}$ is the stochastic discount factor.
+        Where the collateralized Bond value $D(0,t\ped{2})$ with maturity $t\ped{2}$ is the numeraire which permits to move in a forward risk neutral world and $e^{-\int_0^{t\ped{2}} \bar{r}(u)du}$ is the stochastic discount factor.
     
         \subsection{The geometric average approximation} \label{subsection:3.4.3}
         Katsumi Takada (see \cite{takada}) has shown that, to evaluate Arithmetic-LIBOR basis swap, a geometric approximation can be used. This approach takes advantage of the relationship between simple compounded and continuously compounded rates:
@@ -865,9 +864,9 @@ This chapter wants to focus on overnight curve construction passing through ever
         \sum_{i=1}^{N} \tau(t\ped{i-1},t\ped{i})R_T^{3M}D(0,t\ped{i}) = 
         \sum_{i=1}^{N} (V^{Arithm}(t\ped{i-1},t\ped{i}) + \tau(t\ped{i-1},t\ped{i})S_TD(0,t\ped{i}))
         \end{split}
-        \end{equation*}
+        \end{equation*}\\
         By means of the synthetic instrument above, the USD overnight curve bootstrap can be performed now deriving the equilibrium spread $S_T$ and without the USD Libor 3M forwarding term structure. Therefore, this simplification allows a standard basis swaps bootstrap.\\
-        Including the Arithmetic Fed Funds OIS in the calibration has a good impact on USDON curve smoothness as visible in the next two figures.
+        Including the Arithmetic Fed Funds OIS in the calibration has a good impact on USDON curve smoothness as visible in the next two figures.\\
         
         \begin{figure}[!h]
         \centering
