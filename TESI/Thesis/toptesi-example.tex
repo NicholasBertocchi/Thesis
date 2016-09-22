@@ -231,11 +231,127 @@ This first chapter wants to outline the most important issues concerning rate cu
         \begin{description}
             \item{-} Linear interpolation on zero rates or discount factors;
             \item{-} Linear interpolation on log-discounts;
-            \item{-} Constrained cubic spline interpolation on zero rater or log-discounts;
+            \item{-} Natural and Constrained cubic spline interpolation on zero rates or log-discounts;
             \item{-} Monotonic cubic natural spline interpolation on zero rates or log-discounts;
             \item{-} Mixed interpolation.
         \end{description}
-        The description of the this interpolation techniques is postponed to Section \ref{section:3.1} where it will be also introduced the Mixed Interpolation which it is assumed to be the best way to interpolate the overnight curve;
+        Let's analyze them stressing on every pros and cons.  Since each simple forward rate is approximately the integral of instantaneous forward rates, the smoothness of simple forward rates will be analyzed computing instantaneous forward rates. The starting point is a set of known curve's points $\left\{ (t_{i},y_{i}=y(t_{i}))\right\}_{i=1,...,N}$ where $y$ represent the quantity to be interpolated as already defined. $t_{0}$ will be the reference date.
+        
+        \subsection{Linear and Log-Linear interpolation} \label{subsection:1.3.2}
+        This is a poor and simple way to interpolate quantities that can be computed directly on zero rates (Linear) or on log-discounts (log-linear). For $t \in [t_{i-1}, t_{i}]$ the piecewise linear interpolation formula for zero rates is:\\
+        
+        $$z(t)t=\frac{t-t_{i-1}}{t_{i}-t_{i-1}}z(t_{i})t+\frac{t_{i}-t}{t_{i}-t_{i-1}}z(t_{i-1})t$$\\
+        This kind of interpolation techniques produces the so called: "Sawtooth forward rates" as visible in Figure \ref{fig:sawtooth} and \ref{fig:piecewiselinear}: \\
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/sawtooth.png}
+        \caption{An example of sawtooth curve obtained through linear interpolation on zero rates.}
+        \label{fig:sawtooth}
+        \end{figure}
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/piecewiselinear.png}
+        \caption{Forward rates obtained through piecewise linear interpolation on zero rates.}
+        \label{fig:piecewiselinear}
+        \end{figure}
+        
+        \newpage
+        Obviously, this is not a good way to interpolate; forward rates are far to be smooth and curve shape is quite improbable. In the log-discount case, instead, the interpolation formula becomes:\\
+        \\
+        $$z(t)t=-\ln P(t)=-\frac{t-t_{i-1}}{t_{i}-t_{i-1}}\ln P(t_{i})-\frac{t_{i}-t}{t_{i}-t_{i-1}}\ln P(t_{i-1})$$\\
+        \\
+        In this case the output is the so called: "Stepped curve" as visible in Figure \ref{fig:stepped} and Figure \ref{fig:piecewiseflat}. 
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/stepped.png}
+        \caption{An example of stepped forward rates obtained through linear interpolation on log-discounts.}
+        \label{fig:stepped}
+        \end{figure}
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/piecewiseflat.png}
+        \caption{Piecewise flat forward rates obtained through linear interpolation on log-discounts.}
+        \label{fig:piecewiseflat}
+        \end{figure}
+        
+        \newpage
+        The result is not better than the one obtained with the linear interpolation on zero rates. Nevertheless this method is more popular because it can be used to describe the first section of overnight-related curves; In fact, market evidence shows that short rates tend to be constant (flat) between particular dates, namely the ones in which there is a European Central Bank monetary policy board meeting. Therefore, the overnight curve is a particular case in which smoothness is a requirement not strictly recommended before the last ECB meeting date published (usually maximum 1 year and a half forward) but returns to be important after it. In this situation using a piecewise flat interpolation or a cubic one for the whole curve might be not accurate in both cases and so a merger of both interpolation techniques is needed which leads to the so called: "Mixed interpolation" that will be treated in \ref{subsection:3.1.4}. \\
+        
+        \subsection{Natural and Constrained Cubic Spline interpolation} \label{subsection:1.3.4}
+        Traditional cubic spline interpolation methods describe the unknown function $f$ as a collection of $N-1$ spline functions $f_{i}$ ($i=1,...,N-1$), each one defined on the interval $[t_{i},t_{i+1}]$ through the following criteria:
+        \begin{itemize}
+        \item $f_{i}$ is a third order polynomial
+        $$f_{i}(t)=a_{i}+b_{i}t+c_{i}t^{2}+d_{i}t^{3}$$
+        for $i=1,...,N-1$
+        \item $f_{i}$ pass through all the known points
+        $$f_{i}(t_{i})=y_{i}\text{ , }f_{i}(t_{i+1})=y_{i+1}$$
+        for $i=1,...,N-1$
+        \item First order derivative is the same for both functions on either side of a point 
+        $$f^{\prime}_{i}(t_{i+1})=f^{\prime}_{i+1}(t_{i+1})$$
+        for $i=1,...,N-2$
+        \item Second order derivative is the same for both functions on either side of a point
+        $$f^{\prime\prime}_{i}(t_{i+1})=f^{\prime\prime}_{i+1}(t_{i+1})$$
+        for $i=1,...,N-2$
+        \end{itemize}
+        The first equation give us $4N-4$ unknown parameters; the other equations give us $2(N-1)+(N-2)+(N-2)=4N-6$ equations. The two remaining equations are based on a border conditions for the starting and ending points. If we choose the following conditions:
+        $$f^{\prime\prime}_{1}(t_{1})=f^{\prime\prime}_{N-1}(t_{N})=0$$
+        the resulting spline is called {\it Natural Spline}. These interpolation methods suffer of well-documented problems, such as spurious inflection points, excessive convexity, lack of locality and wide oscillations (the spline only alleviates the problem of oscillation seen when fitting a single polynomial). \\
+        The Kruger's method (see \cite{kruger}), which combines the smooth curve characteristics of spline interpolation with non-overshooting behaviour of linear interpolation, is now presented. A Constrained Cubic Spline is constructed using previous equations and replacing the second order derivative at every point with:
+        $$f^{\prime}_{i}(t_{i+1})=f^{\prime}_{i+1}(t_{i+1})=f^{\prime}(t_{i+1})$$
+        for $i=1,...,N-2$ where $f^{\prime}(t_{i+1})$ is a specified first order derivative. The result is an interpolated function less smooth but with a specific slope at every point. Intuitively, the spline's slope will be between the slopes of the adjacent straight lines. Defining:
+        $$S_{i}=\frac{y_{i+1}-y_{i}}{t_{i+1}-t_{i}}$$
+        a good choice is:
+        $$f^{\prime}(t_{i})=
+        \begin{cases}
+        \frac{2}{\frac{1}{S_{i}}+\frac{1}{S_{i-1}}}&\text{if $S_{i}S_{i-1}\geq 0$}\\
+        0&\text{if $S_{i}S_{i-1}< 0$}
+        \end{cases}$$\\
+        Note that this interpolation scheme preserves monotonicity: in regions of input's monotonicity (three successive increasing or decreasing points) the interpolating function preserves this property. Maximum and minimum points are allowed only on pillars. The effect of constrained cubic interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:constrainedzero} and \ref{fig:constrainedlog}. It is notable that the quality of forward rates is really better than the quality achieved with linear interpolation. The heritage of linear interpolation is evident, mainly interpolating on zero rates: the "sawtooth" forwards have become "humps". To reduce this effect the only solution is to increase the number of pillars and this is often achieved using interpolated quotes.\\
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/constrainedzero.png}
+        \caption{Smooth forward rates obtained through Kruger's constrained cubic interpolation on zero rates.}
+        \label{fig:constrainedzero}
+        \end{figure}
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/constrainedlog.png}
+        \caption{Smooth forward rates obtained through Kruger's constrained cubic interpolation on log-discounts.}
+        \label{fig:constrainedlog}
+        \end{figure}
+        
+        \subsection{Monotonic Cubic Natural Spline interpolation: The Hyman Scheme} \label{subsection:3.1.3}
+        As sad before, interpolate with a Cubic spline leads to different problems like spurious inflection points, excessive convexity, lack of locality and wide oscillation that can generate negative forward rates.
+        The Hyman's method or {\it Hyman filter} (see \cite{hyman}) attempts to address traditional cubic spline problems in a different way and, as the Figure \ref{fig:stresscase} suggest, can produce smoother forward rates avoiding the issues listed above.
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/stresscase.png}
+        \caption{Hagan and West stress case}
+        \label{fig:stresscase}
+        \end{figure}
+        The Hyman's filter could be applied to any cubic interpolation scheme, for example the cubic natural spline one, to preserve monotonicity. In case of $C^{2}$ interpolation schemes the Hyman filter ensures monotonicity at the expenses of the second derivative of the interpolated function which will no longer be continuous in the points where the filter has been applied.\\
+        Let's briefly sketch how Hyman filter works. When input data are locally monotone (three successive increasing or decreasing points), if the chosen interpolating function is already monotonic, the Hyman filter leaves it unchanged preserving all of its original features (and, as a consequence, without introducing any distortion), otherwise it changes the slopes locally just enough to guarantee monotonicity. When the data are not locally monotone, instead, the interpolated function will have a maximum/minimum at the node. Maximum and minimum points are allowed also between pillars. The effect of Hyman Filter applied to Cubic Natural Spline Interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:hymanzero} and \ref{fig:hymanlog}. Looking at the smoothness of forward rates, it's clear that this is the best approach from a forward rate smoothness point of view.\\
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.70\textwidth]{images/hymanzero.png}
+        \caption{Monotonic Cubic Natural Spline interpolation on zero rates.}
+        \label{fig:hymanzero}
+        \end{figure}
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.70\textwidth]{images/hymanlog.png}
+        \caption{Monotonic Cubic Natural Spline interpolation on log-discount Factors.}
+        \label{fig:hymanlog}
+        \end{figure}
         
 %\blankpagestyle{headings}
 %\lipsum[1-2]
@@ -359,7 +475,7 @@ This chapter wants to focus on overnight curve construction passing through ever
     \item \textit{Long Dated Region}: in this section the curve show the typical smooth behavior and so, the standard bootstrapping process can be used.
     \end{itemize}
     
-    This particular overnight behaviour (piece-wise constant in short region and smooth in long region) can be fixed using two different kinds of interpolations: linear on log discount and monotonic cubic natural spline on log discount \footnote{the characteristic of this mixed interpolation will be treated in \ref{section:3.1}.}. The linear one is tipically used for pricing purpose in the short term section of the curve (for example to obtain the quotation of $OIS$ up to 1-2 years) and the cubic one for discounting or long term pricing. \\
+    This particular overnight behaviour (piece-wise constant in short region and smooth in long region) can be fixed using two different kinds of interpolations: linear on log discount and monotonic cubic natural spline on log discount \footnote{the characteristic of this mixed interpolation will be treated in \ref{section:3.2}.}. The linear one is typically used for pricing purpose in the short term section of the curve (for example to obtain the quotation of $OIS$ up to 1-2 years) and the cubic one for discounting or long term pricing. \\
     Figure 
     
     \begin{figure}[!h]
@@ -374,176 +490,36 @@ This chapter wants to focus on overnight curve construction passing through ever
 
 %%%CHAPTER3%%%
 
-\chapter{Improving Overnight Curve} \label{chap:3}
-    \section{Defining the best Interpolation Method}\label{section:3.1}
-    All requirements to present some of the most popular interpolation techniques (i.e. quantity to be interpolated plus an interpolation scheme) have been already discussed in Section \ref{section:1.3}; let's introduce them stressing on every pros and cons.\\
-    Since each simple forward rate is approximately the integral of instantaneous forward rates, the smoothness of simple forward rates will be analyzed computing instantaneous forward rates. The starting point is a set of known curve's points $\left\{ (t_{i},y_{i}=y(t_{i}))\right\}_{i=1,...,N}$ where $y$ represent the quantity to be interpolated as already defined. $t_{0}$ will be the reference date.
-        
-        \subsection{Linear and Log-Linear interpolation} \label{subsection:3.1.1}
-        This is a poor and simple way to interpolate quantities that can be computed directly on zero rates (Linear) or on log-discounts (log-linear). For $t \in [t_{i-1}, t_{i}]$ the piecewise linear interpolation formula for zero rates is:\\
-        
-        $$z(t)t=\frac{t-t_{i-1}}{t_{i}-t_{i-1}}z(t_{i})t+\frac{t_{i}-t}{t_{i}-t_{i-1}}z(t_{i-1})t$$\\
-        This kind of interpolation techniques produces the so called: "Sawtooth forward rates" as visible in Figure \ref{fig:sawtooth} and \ref{fig:piecewiselinear}: \\
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/sawtooth.png}
-        \caption{An example of sawtooth curve obtained through linear interpolation on zero rates.}
-        \label{fig:sawtooth}
-        \end{figure}
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/piecewiselinear.png}
-        \caption{Forward rates obtained through piecewise linear interpolation on zero rates.}
-        \label{fig:piecewiselinear}
-        \end{figure}
-        
-        \newpage
-        Obviously, this is not a good way to interpolate; forward rates are far to be smooth and curve shape is quite improbable. In the log-discount case, instead, the interpolation formula becomes:\\
-        \\
-        $$z(t)t=-\ln P(t)=-\frac{t-t_{i-1}}{t_{i}-t_{i-1}}\ln P(t_{i})-\frac{t_{i}-t}{t_{i}-t_{i-1}}\ln P(t_{i-1})$$\\
-        \\
-        In this case the output is the so called: "Stepped curve" as visible in Figure \ref{fig:stepped} and Figure \ref{fig:piecewiseflat}. 
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/stepped.png}
-        \caption{An example of stepped forward rates obtained through linear interpolation on log-discounts.}
-        \label{fig:stepped}
-        \end{figure}
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/piecewiseflat.png}
-        \caption{Piecewise flat forward rates obtained through linear interpolation on log-discounts.}
-        \label{fig:piecewiseflat}
-        \end{figure}
-        
-        \newpage
-        The result is not better than the one obtained with the linear interpolation on zero rates. Nevertheless this method is more popular because it can be used to describe the first section of overnight-related curves; In fact, market evidence shows that short rates tend to be constant (flat) between particular dates, namely the ones in which there is a European Central Bank monetary policy board meeting. Therefore, the overnight curve is a particular case in which smoothness is a requirement not strictly recommended before the last ECB meeting date published (usually maximum 1 year and a half forward) but returns to be important after it. In this situation using a piecewise flat interpolation or a cubic one for the whole curve might be not accurate in both cases and so a merger of both interpolation techniques is needed which leads to the so called: "Mixed interpolation" that will be treated in \ref{subsection:3.1.4}. \\
-        
-        \subsection{Constrained Cubic Spline interpolation: The Kruger Scheme} \label{subsection:3.1.2}
-        Traditional cubic spline interpolation methods describe the unknown function $f$ as a collection of $N-1$ spline functions $f_{i}$ ($i=1,...,N-1$), each one defined on the interval $[t_{i},t_{i+1}]$ through the following criteria:
-        \begin{itemize}
-        \item $f_{i}$ is a third order polynomial
-        $$f_{i}(t)=a_{i}+b_{i}t+c_{i}t^{2}+d_{i}t^{3}$$
-        for $i=1,...,N-1$
-        \item $f_{i}$ pass through all the known points
-        $$f_{i}(t_{i})=y_{i}\text{ , }f_{i}(t_{i+1})=y_{i+1}$$
-        for $i=1,...,N-1$
-        \item First order derivative is the same for both functions on either side of a point 
-        $$f^{\prime}_{i}(t_{i+1})=f^{\prime}_{i+1}(t_{i+1})$$
-        for $i=1,...,N-2$
-        \item Second order derivative is the same for both functions on either side of a point
-        $$f^{\prime\prime}_{i}(t_{i+1})=f^{\prime\prime}_{i+1}(t_{i+1})$$
-        for $i=1,...,N-2$
-        \end{itemize}
-        The first equation give us $4N-4$ unknown parameters; the other equations give us $2(N-1)+(N-2)+(N-2)=4N-6$ equations. The two remaining equations are based on a border conditions for the starting and ending points. If we choose the following conditions:
-        $$f^{\prime\prime}_{1}(t_{1})=f^{\prime\prime}_{N-1}(t_{N})=0$$
-        the resulting spline is called {\it Natural Spline}. These interpolation methods suffer of well-documented problems, such as spurious inflection points, excessive convexity, lack of locality and wide oscillations (the spline only alleviates the problem of oscillation seen when fitting a single polynomial). \\
-        The Kruger's method (see \cite{kruger}), which combines the smooth curve characteristics of spline interpolation with non-overshooting behaviour of linear interpolation, is now presented. A Constrained Cubic Spline is constructed using previous equations and replacing the second order derivative at every point with:
-        $$f^{\prime}_{i}(t_{i+1})=f^{\prime}_{i+1}(t_{i+1})=f^{\prime}(t_{i+1})$$
-        for $i=1,...,N-2$ where $f^{\prime}(t_{i+1})$ is a specified first order derivative. The result is an interpolated function less smooth but with a specific slope at every point. Intuitively, the spline's slope will be between the slopes of the adjacent straight lines. Defining:
-        $$S_{i}=\frac{y_{i+1}-y_{i}}{t_{i+1}-t_{i}}$$
-        a good choice is:
-        $$f^{\prime}(t_{i})=
-        \begin{cases}
-        \frac{2}{\frac{1}{S_{i}}+\frac{1}{S_{i-1}}}&\text{if $S_{i}S_{i-1}\geq 0$}\\
-        0&\text{if $S_{i}S_{i-1}< 0$}
-        \end{cases}$$\\
-        Note that this interpolation scheme preserves monotonicity: in regions of input's monotonicity (three successive increasing or decreasing points) the interpolating function preserves this property. Maximum and minimum points are allowed only on pillars. The effect of constrained cubic interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:constrainedzero} and \ref{fig:constrainedlog}. It is notable that the quality of forward rates is really better than the quality achieved with linear interpolation. The heritage of linear interpolation is evident, mainly interpolating on zero rates: the "sawtooth" forwards have become "humps". To reduce this effect the only solution is to increase the number of pillars and this is often achieved using interpolated quotes.\\
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/constrainedzero.png}
-        \caption{Smooth forward rates obtained through Kruger's constrained cubic interpolation on zero rates.}
-        \label{fig:constrainedzero}
-        \end{figure}
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/constrainedlog.png}
-        \caption{Smooth forward rates obtained through Kruger's constrained cubic interpolation on log-discounts.}
-        \label{fig:constrainedlog}
-        \end{figure}
-        
-        \subsection{Monotonic Cubic Natural Spline interpolation: The Hyman Scheme} \label{subsection:3.1.3}
-        As sad before, interpolate with a Cubic spline leads to different problems like spurious inflection points, excessive convexity, lack of locality and wide oscillation that can generate negative forward rates.
-        The Hyman's method or {\it Hyman filter} (see \cite{hyman}) attempts to address traditional cubic spline problems in a different way and, as the Figure \ref{fig:stresscase} suggest, can produce smoother forward rates avoiding the issues listed above.
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/stresscase.png}
-        \caption{Hagan and West stress case}
-        \label{fig:stresscase}
-        \end{figure}
-        The Hyman's filter could be applied to any cubic interpolation scheme, for example the cubic natural spline one, to preserve monotonicity. In case of $C^{2}$ interpolation schemes the Hyman filter ensures monotonicity at the expenses of the second derivative of the interpolated function which will no longer be continuous in the points where the filter has been applied.\\
-        Let's briefly sketch how Hyman filter works. When input data are locally monotone (three successive increasing or decreasing points), if the chosen interpolating function is already monotonic, the Hyman filter leaves it unchanged preserving all of its original features (and, as a consequence, without introducing any distortion), otherwise it changes the slopes locally just enough to guarantee monotonicity. When the data are not locally monotone, instead, the interpolated function will have a maximum/minimum at the node. Maximum and minimum points are allowed also between pillars. The effect of Hyman Filter applied to Cubic Natural Spline Interpolation on zero rates and on the logarithm of discount factors is shown in Figures \ref{fig:hymanzero} and \ref{fig:hymanlog}. Looking at the smoothness of forward rates, it's clear that this is the best approach from a forward rate smoothness point of view.\\
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.70\textwidth]{images/hymanzero.png}
-        \caption{Monotonic Cubic Natural Spline interpolation on zero rates.}
-        \label{fig:hymanzero}
-        \end{figure}
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.70\textwidth]{images/hymanlog.png}
-        \caption{Monotonic Cubic Natural Spline interpolation on log-discount Factors.}
-        \label{fig:hymanlog}
-        \end{figure}
-        
-        \newpage
-        \subsection{Mixed Interpolation} \label{subsection:3.1.4}
-        Summing up, it has been previously discussed that the overnight case is the only one where curve's smoothness is not strictly required in the short therm section because market evidence shows that the overnight curve tends to be piecewise constant between ECB monetary policy meeting dates (generally till 1 year and a half from spot date). The best way to replicate this kind of behaviour, as seen in \ref{subsection:3.1.1} is to use a Log-Linear interpolation which produces flat forwards between pillars. After the last ECB dated OIS, however, assuming a piecewise constant curve is no more reasonable; so it becomes necessary to use again an interpolation technique which produces smooth forward rates (like the cubic splines discussed in \ref{subsection:3.1.2} and \ref{subsection:3.1.3}). Since using a Log-Linear or a Cubic interpolation for the whole curve leads, in both cases, to distortions, the best way to model the overnight curve behaviour is by means of {\itshape Mixed Interpolation} which, as the name suggest, permits to mash two kind of interpolation following two different methods:
-        
-        \begin{itemize}
-            \item The {\itshape Split Range} approach which consists in interpolate till a pre-determined pillar (from now called the {\itshape Switch Pillar}) using an interpolation technique and to interpolate using another techniques after that.
-            \item {\itshape Share Range} approach it is a bit more sophisticated and consists in interpolate two times the whole curve; the first time using a techniques and the second time using the other one and then merge the obtained curves in the pre-determined switch pillar. 
-        \end{itemize}
-        Coming back to the previous sections, it has been discussed that the best way to obtain a piecewise constant curve is by means of a Linear interpolation on log-discounts and the best way to obtain smooth forward rates is to use a Monotonic Cubic Natural Spline on log-discounts with the Hyman filter. So, it makes sense to build a Mixed Interpolation which uses a Log-Linear interpolation before the switch pillar and a Natural Spline with Hyman filter after that. \\
-        The results of this approach are shown in Figure \ref{fig:mixedinterpsplit} and \ref{fig:mixedinterpshare}. \\
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/mixedinterpsplit.png}
-        \caption{Mixed forward rates obtained through a Mixed interpolation with slit range approach.}
-        \label{fig:mixedinterpsplit}
-        \end{figure}
-        
-        Analyzing the image it is straightforward to understand that this process produces a mixed curve behaviour which is flat before the switch pillar and smooth after it.
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/mixedinterpshare.png}
-        \caption{Mixed forward rates obtained through a Mixed interpolation with share range approach.}
-        \label{fig:mixedinterpshare}
-        \end{figure}
-        
-        \newpage
-        As visible in the previous figures the two approaches produce a very similar behaviour. Finally, a repricing error analysis is shown in Figure \ref{fig:repricingmixed}. \\
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.6\textwidth]{images/repricingmixed.png}
-        \caption{Repricing errors on out-of-curve OIS using a linear interpolation for the whole curve (first column), a share range mixed interpolation (second column) and a split range mixed interpolation (last column).}
-        \label{fig:repricingmixed}
-        \end{figure} 
-        The aim of this analysis is to demonstrate that the mixed interpolation is the best way to interpolate the overnight curve looking to the curve goodness, expressed in out-of-curve OIS repricing errors. In order to do that, a Log-Linear approach for the whole curve, a Mixed Log-linear/Hyman share range approach and a Mixed Log-linear/Hyman split range approach have been compared. Figure \ref{fig:repricingmixed} shows that the three methods produce almost the same results in the short term section curve but in the long term section the repricing errors tend to diverge due to the fact that a piecewise constant interpolation becomes less and less accurate as the instrument maturity increase.  \\
-        For this reasons, this work suggest that the mixed interpolation is the best way to interpolate the overnight curve and it has also the advantage to permits the usage of a {\it Forward Stub} in order to fix the overlapping problem that it will be discussed in next section.
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/mixedcurve.png}
-        \caption{Mixed Interpolated 60 years curve.}
-        \label{fig:mixedcurve}
-        \end{figure}
+\chapter{Advanced Overnight Curve Issues} \label{chap:3}
+This chapter aims to analyze and propose a solution to some advanced problems related to the overnight curve calibration. First of all, the attention will be placed on the EUR market and, in particular, on the short-term section where the inclusion of forward start instruments (as the ECB OIS) leads to wide oscillation caused by overlapping instruments. To solve the problem, this work suggest to build a forward meta-instrument called "{\it Stub}" to cover the section between the maturity of the last spot starting OIS and the settlement of the first ECB OIS which implied value can be derived assuming a no-arbitrage condition. To support this solution, a re-pricing error analysis will be presented in order to show that this approach can minimize distortion. This re-pricing analysis will be exploited also in the other issues and consists in using both curves (with and without the solution) to price a wide subset of all ICAP (see \cite{icap}) overnight indexed instruments. The purpose is to demonstrate that using the solutions proposed in this work the ICAP instruments re-pricing will be more accurate which means that the outcome curve quality as been improved. All the analysis will be performed by mean of QuantLibXL 1.9 version \footnote{QuantLib is a C++ free/open-source library for quantitative finance, for more information see \cite{quantlib}}. \\
+The next step will be focused on the overnight curve behaviour. Since empirical evidence shows that the short term section tends to be linear between European Central Bank monetary policy board meeting dates, it is straightforward that, in this context, a log-linear interpolation fits well the curve behaviour. Otherwise, The flat interpolator is consistent till the end of the ECB OIS strip but, after that, assuming constant forward rates becomes quite improbable. This is the reason why this work suggest to calibrate the overnight curve by means of a so called: "{\it Mixed Interpolation}" which merges two different interpolation like, for example, a log-linear on discount factors up to a specific date and a cubic spline after it. Finally The results of the mixed interpolation applied on the curve will be presented taking advantage of the same re-pricing analysis explained before.\\
+Moving ahead to the next issue, the work will be extended to both EUR and USD overnight curve. The jumps problem will be treated in order to present a methodology to estimate their size following a similar approach as the one proposed by Burghardt (\cite{burgh}) and recovered by Ametrano-Mazzocchi (\cite{amemaz}) for the EUR market case. This approach will be adapted in order to account also negative jumps, as the one shown in the Fed Funds time series. \\
+Focusing just on the USD market case, the {\it Arithmetic Average Fed Funds OIS} \footnote{Arithmetic FF-OIS as well as the Mixed Interpolation are implemented in latest QuantLib version and exported in QuantLibXL} will be briefly described stressing on the pros and cons of their inclusion in the USD overnight curve bootstrap.
+To perform the analysis it will be used a market dataset dating at {\it 29-January-2016} which is shown in the following figure. 
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.9\textwidth]{images/dataset.png}
+\caption{Market dataset used to perform the analysis.}
+\label{fig:dataset}
+\end{figure}
+
+\newpage
+In order to avoid overfitting distorsion, all overnight curves are bootstrapped starting from a subset of all market quotes shown in Figure \ref{fig:dataset}. The overnight curve composition is visible in the next figure. \\
+It is useful to remember that, while an included instruments is always re-priced perfectly, all the others are interpolated and, as a consequence, will show re-pricing errors. The validation of this work's analysis will pass through the proof that the solutions proposed permits to minimize the out-of-curve instruments re-pricing errors. 
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.9\textwidth]{images/subset.png}
+\caption{All the instruments included in the EUR overnight curve calibration.}
+\label{fig:subset}
+\end{figure}
     
-    \newpage     
-    \section{Forward Stub for overlapping Instruments} \label{section:3.2}
-    This section is devoted to the presentation and solution of a particular overnight curve problem due to the manage of the first ECB dated OIS. This kind of instruments are forward start OIS that must be included in the curve calibration because of their liquidity. The problem occurs since spot starting OIS maturity dates,in most of the cases, does not coincide with the settlement date of the first ECB OIS and this leads to a situation in which there are two solutions but either of them produces good results:
+    \newpage
+    \section{Forward Stub} \label{section:3.2}
+    This section is devoted to the analysis of a particular overnight curve problem caused by the manage of both spot starting instruments (like OIS) and forward start instruments (like ECB OIS) in the bootstrap algorithm. The problem occurs since spot starting OIS maturity dates, in most of the cases, does not coincide with the settlement date of the first ECB OIS and this leads to an overlapping instruments problem. Since the calibration algorithm must re-price perfectly all the included market quotes, the overlapping instruments force the calibrator to re-price both of them and, in order to respect this constrain, it will introduce wide oscillation in the curve shape. \\  
+    In order to do that, it will be used a market dataset dating at {\it 29-January-2016} which is shown in the following figure.
+    
     
      \begin{itemize}
          \item{} A possibility is to include all spot starting OIS taking no care of the fact that certainly one of them will have an overlapping maturity date with the forward start ECB OIS (except for the lucky case in which a spot starting OIS maturity coincides with the ECB dates OIS settlement but this situation can only happens one day for each instrument). This solution's benefit is that the ON curve will be totally covered because the bootstrap algorithm can manage a sequence of maturities which permits a "pillar-to-pillar" standard bootstrap. Otherwise this choice implies that there will be a short time-frame presenting overlapping instruments as visible in Figure \ref{fig:overlapping}.
@@ -648,6 +624,52 @@ This chapter wants to focus on overnight curve construction passing through ever
         \includegraphics[width=0.5\textwidth]{images/errors.png}
         \caption{Repricing errors summary for all possible solutions.}
         \label{fig:errors}
+        \end{figure}
+
+
+    \section{Mixed Interpolation technique}\label{section:3.2}
+        Summing up, it has been previously discussed that the overnight case is the only one where curve's smoothness is not strictly required in the short therm section because market evidence shows that the overnight curve tends to be piecewise constant between ECB monetary policy meeting dates (generally till 1 year and a half from spot date). The best way to replicate this kind of behaviour, as seen in \ref{subsection:3.1.1} is to use a Log-Linear interpolation which produces flat forwards between pillars. After the last ECB dated OIS, however, assuming a piecewise constant curve is no more reasonable; so it becomes necessary to use again an interpolation technique which produces smooth forward rates (like the cubic splines discussed in \ref{subsection:3.1.2} and \ref{subsection:3.1.3}). Since using a Log-Linear or a Cubic interpolation for the whole curve leads, in both cases, to distortions, the best way to model the overnight curve behaviour is by means of {\itshape Mixed Interpolation} which, as the name suggest, permits to mash two kind of interpolation following two different methods:
+        
+        \begin{itemize}
+            \item The {\itshape Split Range} approach which consists in interpolate till a pre-determined pillar (from now called the {\itshape Switch Pillar}) using an interpolation technique and to interpolate using another techniques after that.
+            \item {\itshape Share Range} approach it is a bit more sophisticated and consists in interpolate two times the whole curve; the first time using a techniques and the second time using the other one and then merge the obtained curves in the pre-determined switch pillar. 
+        \end{itemize}
+        Coming back to the previous sections, it has been discussed that the best way to obtain a piecewise constant curve is by means of a Linear interpolation on log-discounts and the best way to obtain smooth forward rates is to use a Monotonic Cubic Natural Spline on log-discounts with the Hyman filter. So, it makes sense to build a Mixed Interpolation which uses a Log-Linear interpolation before the switch pillar and a Natural Spline with Hyman filter after that. \\
+        The results of this approach are shown in Figure \ref{fig:mixedinterpsplit} and \ref{fig:mixedinterpshare}. \\
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/mixedinterpsplit.png}
+        \caption{Mixed forward rates obtained through a Mixed interpolation with slit range approach.}
+        \label{fig:mixedinterpsplit}
+        \end{figure}
+        
+        Analyzing the image it is straightforward to understand that this process produces a mixed curve behaviour which is flat before the switch pillar and smooth after it.
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/mixedinterpshare.png}
+        \caption{Mixed forward rates obtained through a Mixed interpolation with share range approach.}
+        \label{fig:mixedinterpshare}
+        \end{figure}
+        
+        \newpage
+        As visible in the previous figures the two approaches produce a very similar behaviour. Finally, a repricing error analysis is shown in Figure \ref{fig:repricingmixed}. \\
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.6\textwidth]{images/repricingmixed.png}
+        \caption{Repricing errors on out-of-curve OIS using a linear interpolation for the whole curve (first column), a share range mixed interpolation (second column) and a split range mixed interpolation (last column).}
+        \label{fig:repricingmixed}
+        \end{figure} 
+        The aim of this analysis is to demonstrate that the mixed interpolation is the best way to interpolate the overnight curve looking to the curve goodness, expressed in out-of-curve OIS repricing errors. In order to do that, a Log-Linear approach for the whole curve, a Mixed Log-linear/Hyman share range approach and a Mixed Log-linear/Hyman split range approach have been compared. Figure \ref{fig:repricingmixed} shows that the three methods produce almost the same results in the short term section curve but in the long term section the repricing errors tend to diverge due to the fact that a piecewise constant interpolation becomes less and less accurate as the instrument maturity increase.  \\
+        For this reasons, this work suggest that the mixed interpolation is the best way to interpolate the overnight curve and it has also the advantage to permits the usage of a {\it Forward Stub} in order to fix the overlapping problem that it will be discussed in next section.
+        
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/mixedcurve.png}
+        \caption{Mixed Interpolated 60 years curve.}
+        \label{fig:mixedcurve}
         \end{figure}
         
     \newpage    
@@ -1019,9 +1041,13 @@ This devoted to introduce some basic and fundamental interest rate rule in order
 
 \bibitem{hyman} J.M.~Hyman, {\em Accurate monotonicity preserving cubic interpolation}, SIAM Journal on scientific and statistical computing, 4(4):645-654, 1983.\\
 
-\bibitem{amemaz} F.M.~Ametrano, P. ~Mazzocchi, {\em EONIA Jumps and Proper Euribor Forwarding: The Case of Synthetic Deposits in Legacy Discount-Based Systems}, https://speakerdeck.com/nando1970/eonia-jumps-and-proper-euribor-forwarding, December 2014.\\
+\bibitem{quantlib} {\em QuantLib, the free/open-source object oriented c++ financial library}, https//:www.quantlib.org/ \\
+
+\bibitem{icap} {\em ICAP, the leading markets global broking.}, https://www.icap.com/ \\
 
 \bibitem{burgh} G.~Burghardt, S. Kirshner {\em One good turn}, CME Interest Rate Products Advanced Topics. Chicago: Chicago Mercatile Exchange,2002\\
+
+\bibitem{amemaz} F.M.~Ametrano, P. ~Mazzocchi, {\em EONIA Jumps and Proper Euribor Forwarding: The Case of Synthetic Deposits in Legacy Discount-Based Systems}, https://speakerdeck.com/nando1970/eonia-jumps-and-proper-euribor-forwarding, December 2014.\\
 
 \bibitem{takada} K.~Takada, {\em Valuation of Arithmetic Average of Fed Funds Rates and Construction of the US dollar Swap Yield Curve}, http://www.javaquant.net/papers/AverageIndexSwap.pdf , September 2011.\\
 
