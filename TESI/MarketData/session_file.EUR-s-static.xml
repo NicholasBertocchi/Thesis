@@ -7,7 +7,8 @@
   <Frameworks>
     <Framework name="QuantLibXL" displayName="QuantLibXL" fileName="QuantLibXL">
       <Components>
-        <Component path=".\xll\QuantLibXL-vc120-mt-1_9_0.xll" />
+	    <Component path=".\xll\ObjectHandler-xll-vc120-mt-1_9_0.xll" />
+        <Component path=".\xll\QuantLibXLDynamic-vc120-mt-1_9_0.xll" />
         <Component path=".\framework\QuantLibXL.xla" />
       </Components>
       <StartupParameters>
