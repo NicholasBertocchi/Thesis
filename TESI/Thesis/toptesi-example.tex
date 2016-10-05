@@ -517,7 +517,7 @@ It is useful to remember that, while an included instruments is always re-priced
 \end{figure}
     
     \newpage
-    \section{Forward Stub} \label{section:3.2}
+    \section{Forward Stub} \label{section:3.1}
     Starting from the first point, a particular overnight curve problem due to the manage of both spot starting instruments (like OIS) and forward start instruments (like ECB OIS) in the bootstrap algorithm will be presented. The problem occurs since spot starting OIS maturity dates, in most of the cases, does not coincide with the settlement date of the first ECB OIS and this leads to an overlapping instruments problem. Since the calibration algorithm must re-price perfectly all the included market quotes, the overlapping instruments force the calibrator to re-price both of them and, in order to respect this constrain, it will introduce wide oscillation in the curve shape. \\ 
     To solve this problem different approach can be followed:
     
@@ -546,7 +546,7 @@ It is useful to remember that, while an included instruments is always re-priced
         \end{itemize}
         
         \newpage
-        \subsection{Implied value calculation} \label{subsection:3.2.1}
+        \subsection{Implied value calculation} \label{subsection:3.1.1}
         Let's suppose now to be in the situation described in Figure \ref{fig:exclude} in which there is a not covered curve's section. The Stub quote represents a forward rate which starts from the last not-overlapping instrument's (the OIS1M) maturity date and ends in the first ECB Dated settlement date.\\
         
         \begin{figure}[!h]
@@ -582,7 +582,7 @@ It is useful to remember that, while an included instruments is always re-priced
         
         $$ \mbox{{\it Stub}} = \frac{\left[\frac{1+F(0,t\ped{2}) \cdot \tau(0,t\ped{2})}{1+F(t\ped{1},t\ped{2}) \cdot \tau(t\ped{1},t\ped{2})}-1\right]}{\tau(t\ped{0},t\ped{1})}$$
         
-        \subsection{Impact on Curve and Repricing Errors} \label{subsection:3.2.2}
+        \subsection{Impact on Curve and Repricing Errors} \label{subsection:3.1.2}
         In the previous section it has been presented a particular ON curve problem and 3 possible ways to solve it. Let's start from the worst one, namely the solution in which the overlapping instrument is excluded leaving a non-covered curve's section. With this approach the curve obtained is represented in the underlying figure:\\
         
         \begin{figure}[!h]
@@ -691,9 +691,9 @@ It is useful to remember that, while an included instruments is always re-priced
         \end{figure}
         
     \section{Jump estimation} \label{section:3.3}
-    As already discussed in previous chapters, the key point in a state-of-the-art bootstrapping is to obtain smooth forward rates.
+    As already discussed in previous chapters, the key point in a state-of-the-art curve bootstrapping is to obtain smooth forward rates.
     In order to do that, for even the best interpolation scheme to be effective, any market jump must be removed before the curve calibration and than added back at the end of the process.
-    To perform the analysis for the EUR market case, the same dataset has been used while, obviously, for the USD another dataset, dated on {\it 4-October-2016}, has been used which is shown in the following figure.
+    To perform the analysis for the EUR market case the same dataset has been used while for the USD case another dataset, dated on {\it 5-October-2016}, has been used which is shown in the following figure.
     
     \begin{figure}[!h]
     \centering
@@ -702,7 +702,7 @@ It is useful to remember that, while an included instruments is always re-priced
     \label{fig:usddataset}
     \end{figure}
     
-    As the EUR market case, to perform the USD overnight curve bootstrap a wide subset of the instruments listed above will be used which is summarized in the next figure.
+    As the EUR market case, to avoid over-fitting problems, the USD overnight curve calibration has been performed using only a wide subset of the instruments listed above which is summarized in the next figure.
     
     \begin{figure}[!h]
     \centering
@@ -711,7 +711,7 @@ It is useful to remember that, while an included instruments is always re-priced
     \label{fig:usdoncurve}
     \end{figure}
     
-       \subsection{The EUR market case: Positive Jumps} \label{subsection:3.3.2}
+       \subsection{The EUR market case: Positive Jumps} \label{subsection:3.3.1}
        A rate jump can be seen, in a financial point of view, as a higher index fixing due to increased search of liquidity of market participants caused by end-of-month or end-of-year capital requirements. This definition is good for the EUR case in which market evidence shows positive jumps as visible in the figure below.
        
        \begin{figure}[!h]
@@ -764,7 +764,7 @@ It is useful to remember that, while an included instruments is always re-priced
         \newpage
         As visible, the short term section of the curve is changed due the fact that the first jumps has been accounted. To preserve the value of the instantaneous forward rate integral in that section, the calibration algorithm pushes down all the segment changing the curve shape.
         
-        \subsection{The USD market case: Negative Jumps}
+        \subsection{The USD market case: Negative Jumps} \label{subsection:3.3.2}
         Moving to the USD market, the situation looks inverted. In fact, as visible in Figure \ref{fig:bloombergusd}, the Fed Funds fixings shows negative jumps every end-of-month and with a particular deep size. In a financial point of view this is due to the excess of liquidity that market participants hold and want to sell at the end of each month. This behaviour tends to be constant during time, in fact, in the last two years, the Fed Funds time series shows negative jumps every end-of-month with no exceptions and this leads to a good predictability of this phenomenon.\\  
         
         \begin{figure}[!h]
@@ -801,157 +801,14 @@ It is useful to remember that, while an included instruments is always re-priced
         
         \newpage
         It is clear that, since the piecewise flat steps of the curve are given by market quotes which are the integral of instantaneous forward rates between an interval $(t\ped{1},t\ped{2})$, if this integral must account a deep below level point, the residual part is shifted up in order to maintain the integral value equal.\\
-
-    \section{Fed Funds Arithmetic Average OIS} \label{section:3.4}
-    From the previous section the subject have been moved to U.S. Dollar overnight yield curve calibration. This part aims to discuss how the USD overnight (USDON) curve can be improved including in the bootstrap the Fed Funds (FF) arithmetic OIS instead of the simple OIS indexed to the Fed Funds rate. This is a recommendable practice due to the fact that arithmetic OIS are traded in the dealer's market more actively and so, fore the liquidity criteria discussed in \ref{section:2.1}, it is better to include them in the calibration algorithm.
-    
-        \subsection{Fed Funds OIS Vs. Arithmetic-LIBOR basis swap} \label{subsection:3.4.1}
-        FF-OIS, as the EUR-OIS already discussed in \ref{subsection:2.1.2}, are particular IRS which floating-leg pays the daily compounded FF rate. In a interest rate basis swap (IRBS), instead, two different floating rates in the same currency are exchanged which can be, for example, two LIBORs with different tenors. Arithmetic-LIBORs, so, are basis swaps which exchange the FF rate on a leg and a LIBOR rate on the other. In derivative products like swaps the FF rates, as the EUR overnight ones, are never paid on a daily basis but paid collectively in a single coupon. The difference between FF-OIS and Arithmetic-LIBOR basis swaps is that, while in FF-OIS coupons are done on a daily compounded basis, in Arithmetic-LIBOR basis swaps are built doing an arithmetic average. This calculation difference leads to some complications which implies two convexity adjustment which derivation is out of this work objects and will be briefly introduced later.\\
-        Expressing the previous concept in formulas, it is possible to define the daily compounded FF-OIS rate for the period $(t\ped{1},t\ped{2})$ as:
         
-        $$R^{OIS}(t\ped{1},t\ped{2}) = \frac{1}{\tau(t\ped{1},t\ped{2})} \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]$$\\
-        While the arithmetic average Fed Funds rate is sampled as:\\
-        $$R^{Arithm}(t\ped{1},t\ped{2}) = \frac{\sum_{k=1}^{K} \tau\ped{k}r\ped{k}}{\tau(t\ped{1},t\ped{2})}$$\\
-        Where $r\ped{k}$ is the effective ON rates fixed for the period $(t\ped{1},t\ped{2})$ and $\tau\ped{k}$ is the corresponding year fraction calculated in {\it Actual/360}. Since $\tau(t\ped{1},t\ped{2})$ is the year fraction related to the whole interest period, it is straightforward to understand that $\tau(t\ped{1},t\ped{2}) = \sum_{k=1}^{K}\tau\ped{k}$.\\
-        So, assuming a notional equal to $N$, the interest paid by the FF-OIS for the period $(t\ped{1},t\ped{2})$ is:
-        
-        $$N * R^{OIS}(t\ped{1},t\ped{2}) * \tau(t\ped{1},t\ped{2}) = N * \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]$$
-        and for the Arithmetic-LIBOR basis swap is:
-        $$N * R^{Arithm}(t\ped{1},t\ped{2}) * \tau(t\ped{1},t\ped{2}) = N * \sum_{k=1}^{K}\tau\ped{k}r\ped{k}$$
-        
-        \subsection{Fed Funds OIS and Arithmetic-LIBOR basis swap valuation} \label{subsection:3.4.2}
-        Denoting as $D(t,T)$ the value at maturity $T$ of a collateralized Bond, its payoff can be defined as the conditional expectation at time $T$, under a proper risk-neutral measure $M$, of the average risk-free rate which, for all collateralized interest rate derivatives, can be substituted with the overnight rate (see \cite{hull} for more details). In formula:
-        
-        $$D(t,T) = E^{M}\ped{t} \left[e^{-\int_t^T \bar{r}(u)du}\right]$$
-        This permits to express the value $V(t,T)$ of a collateralized FF-OIS over the accrual period $(t\ped{1},t\ped{2})$ as:
-        
-        \begin{equation*}
-        \begin{split}
-        V^{OIS}(t\ped{1},t\ped{2}) &= E^M \left[e^{-\int_0^{t\ped{2}} \bar{r}(u)du} \tau(t\ped{1},t\ped{2})R^{OIS}(t\ped{1},t\ped{2})\right] \\
-        &= E^M \left[e^{-\int_0^{t\ped{2}} \bar{r}(u)du} \left[\prod_{k=1}^{K} (1+\tau\ped{k}r\ped{k})-1\right]\right] \\
-        &= D(0,t\ped{1})-D(0,t\ped{2})\\
-        \end{split}
-        \end{equation*}
-        so the $t$ forward OIS rate is given by:
-        
-        $$R_f^{OIS}(t;t\ped{1},t\ped{2}) = \frac{1}{\tau(t\ped{1},t\ped{2})}\left[\frac{D(t,t\ped{1})}{D(t,t\ped{2})}-1\right]$$
-        The Arithmetic-LIBOR basis swap present value over the accrual period $(t\ped{1},t\ped{2})$, instead, is given by:
-    
-        \begin{equation*}
-        \begin{split}
-        V^{Arithm}(t\ped{1},t\ped{2}) &= E^M \left[e^{-\int_0^{t\ped{2}} \bar{r}(u)du} \tau(t\ped{1},t\ped{2})R^{Arithm}(t\ped{1},t\ped{2})\right] \\
-        &= E^M \left[e^{-\int_0^{t\ped{2}} \bar{r}(u)du} \left[\prod_{k=1}^{K} \tau\ped{k}r\ped{k}\right]\right] \\
-        &\approx E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \int_{t\ped{1}}^{t\ped{2}} \bar{r}(u)du\right] \\
-        &= D(0,t\ped{2})E^{t\ped2}\left[\int_{t\ped{1}}^{t\ped{2}} \bar{r}(u)du\right]
-        \end{split}
-        \end{equation*}
-        Where the collateralized Bond value $D(0,t\ped{2})$ with maturity $t\ped{2}$ is the numeraire which permits to move in a forward risk neutral world and $e^{-\int_0^{t\ped{2}} \bar{r}(u)du}$ is the stochastic discount factor.
-    
-        \subsection{The geometric average approximation} \label{subsection:3.4.3}
-        Katsumi Takada (see \cite{takada}) has shown that, to evaluate Arithmetic-LIBOR basis swap, a geometric approximation can be used. This approach takes advantage of the relationship between simple compounded and continuously compounded rates:
-        
-        $$1 + R * \tau(t,T) = e^{\tau(t,T)*r}$$
-        If $R$ it is assumed to be the overnight rate than the compounded amount between the accrual period $(t\ped{1},t\ped{2})$ is calculated as:
-        
-        $$\prod_{k=1}^{K}(1+\tau\ped{k}R\ped{k}) = e^{\sum_{k=1}^{K}\tau\ped{k}r\ped{k}}$$
-        Where $R\ped{k}$ is the simple compounded ON rate and $r\ped{k}$ is the continuously compounded ON rate which satisfies the relationship expressed before. the previous equation also implies a limiting relationship so that:
-        
-        $$\lim_{\tau \rightarrow 0}(1+\tau R)^{\frac{1}{\tau}} = e^R$$
-        This means that if $\tau$ is enough small like, for example, one day ($\frac{1}{360}$ using a Act/360 convention) then the simple ON rate $R$ approximates reasonably the continuously compounded ON rate $r$. Since the ON rate has a small $\tau$, it is possible to re-write the previous equation:
-        $$\prod_{k=1}^{K}(1+\tau\ped{k}R\ped{k}) = e^{\sum_{k=1}^{K}\tau\ped{k}r\ped{k}}$$
-        like:
-        $$\prod_{k=1}^{K}(1+\tau\ped{k}R\ped{k}) = e^{\sum_{k=1}^{K}\tau\ped{k}R\ped{k}}$$
-        So, the Arithmetic-LIBOR basis swap rate can be also re-written as:
-        \begin{equation*}
-        \begin{split}
-        V^{Arithm}(t\ped{1},t\ped{2}) &= \frac{1}{\tau(t\ped{1},t\ped{2})}log\prod_{k=1}^{K}(1+\tau\ped{k}R\ped{k})\\
-        &= \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})R^{OIS}(t\ped{1},t\ped{2})) \\
-        \end{split}
-        \end{equation*}
-        This leads to another possible description of the Arithmetic-LIBOR basis swap valuation formula:
-        
-        \begin{equation*}
-        \begin{split}
-        V^{Arithm}(t\ped{1},t\ped{2}) &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \tau(t\ped{1},t\ped{2})R^{Arithm}(t\ped{1},t\ped{2})\right] \\
-        &= E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \left[\sum_{k=1}^{K} \tau\ped{k}r\ped{k}\right]\right] \\
-        &\approx E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \left[log\prod_{k=1}^{K} (1+\tau\ped{k}R\ped{k}\right]\right] \\
-        &\approx E^M \left[e^{-\int_0^{t\ped{2}} r(u)du} \int_{t\ped{1}}^{t\ped{2}} r(u)du\right] \\
-        &= D(0,t\ped{2})E^{t\ped2}\left[\int_{t\ped{1}}^{t\ped{2}} r(u)du\right]
-        \end{split}
-        \end{equation*}
-        In this case, the Airthmetic-LIBOR $t$ forward rate can be defined as:
-        $$R_f^{Arithm}(t;t\ped{1},t\ped{2}) = \frac{1}{\tau(t\ped{1},t\ped{2})}E^{t\ped{2}}\left[\int_{t\ped{1}}^{t\ped{2}} ru(du)\right]$$
-        Supposing that rates have no volatility, the ON rate $r(u)$ at time $u$ can be replaced by the initial instantaneous forward rate with maturity $u$, $r(0;u)$. In this particular case one of the two convexity adjustment must not be considered anymore and it is possible to derive:
-        
-        \begin{equation*}
-        \begin{split}
-        \int_{t\ped{1}}^{t\ped{2}}r(0;u)du &= log\frac{D(0,t\ped{1})}{D(0,t\ped{2})}\\
-        &= log(1+ \tau(t\ped{1},t\ped{2})*R_f^{Arithm}(0;t\ped{1},t\ped{2}))
-        \end{split}
-        \end{equation*}
-        Otherwise, plotting $log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2}))$ against $\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0,t\ped{1},t\ped{2})$ it is clear that there is a convexity in Arithmetic-LIBOR coupon relative to FF-OIS coupon as shown in Figure \ref{fig:convexity2}. It is also clear that in any case it results that:
-        
-        $$\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0,t\ped{1},t\ped{2}) \geq log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2}))$$\\
-        except when $R_f=0$ in which the payoffs are equal. For this reason, to avoid any kind of arbitrage, the following relationship must hold:
-        
-        $$R_f^{Arithm}(0,t\ped{1},t\ped{2}) < \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2})) < R_f^{OIS}(0;t\ped{1},t\ped{2})$$
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.8\textwidth]{images/convexity2.png}
-        \caption{Also without volatility it emerges another kind of convexity in the two payoffs.}
-        \label{fig:convexity2}
-        \end{figure}
-        In conclusion, it is possible to say that the $R_f^{Arithm}(t;t\ped{1},t\ped{2})$ is smaller than the $R_f^{OIS}(t;t\ped{1},t\ped{2})$ by 2 different convexity adjustment the first of which is static and exists even if there is no volatility. Its value corresponds to:
-        
-        $$ConvAdj_1 = R_f^{OIS}(0;t\ped{1},t\ped{2}) - \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2}))$$
-        This is the convexity correction shown in the previous figure. The other convexity adjustment is, instead, dynamic since it is caused by the forward OIS rate volatility and its value is:
-        $$ConvAdj_2 = \frac{1}{\tau(t\ped{1},t\ped{2})}log(1+\tau(t\ped{1},t\ped{2})*R_f^{OIS}(0;t\ped{1},t\ped{2})) - R_f^{Arithm}(0;t\ped{1},t\ped{2})$$
-        The valuation of this second correction term could be performed taking advantage of an Hull \& White short rate model (for more information see \cite{hullwhite}) but its derivation is outside the purposes of this work.
-    
-        \subsection{Bootstrap methodology and impact on USDON curve} \label{subsection:3.4.4}
-        Actually this kind of instruments are quoted as spread $S_T$ against USD Libor 3M, so it is possible to set the following equation:
-
-        \begin{equation*}
-        \begin{split}
-        \sum_{i=1}^{N} \tau(t\ped{i-1},t\ped{i}) L_f^{3M}(0,t\ped{i-1},t\ped{i})D(0,t\ped{i}) =
-        \sum_{i=1}^{N} (V^{Arithm}(t\ped{i-1},t\ped{i}) + \tau(t\ped{i-1},t\ped{i})S_TD(0,t\ped{i}))
-        \end{split}
-        \end{equation*}
-        In order to use these instruments for building the USD overnight rate curve it is necessary to bootstrap this curve together with the 3M Libor forwarding curve but this implies that both curves must be bootstrapped jointly. Because this combined bootstrap could be a bit complex, suppose that swaps USD Libor 3M against fixed rate are quoted in the market. Each market quote represents the fixed rate making the two legs of the swap equal. So, it is possible to substitute the USD Libor 3M with the fixed rate of the specific swap maturing in $T$ and set the following equation: 
-
-        \begin{equation*}
-        \begin{split}
-        \sum_{i=1}^{N} \tau(t\ped{i-1},t\ped{i})R_T^{3M}D(0,t\ped{i}) = 
-        \sum_{i=1}^{N} (V^{Arithm}(t\ped{i-1},t\ped{i}) + \tau(t\ped{i-1},t\ped{i})S_TD(0,t\ped{i}))
-        \end{split}
-        \end{equation*}\\
-        By means of the synthetic instrument above, the USD overnight curve bootstrap can be performed now deriving the equilibrium spread $S_T$ and without the USD Libor 3M forwarding term structure. Therefore, this simplification allows a standard basis swaps bootstrap.\\
-        Including the Arithmetic Fed Funds OIS in the calibration has a good impact on USDON curve smoothness as visible in the next two figures.\\
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/metaoiscurve.png}
-        \caption{The USD overnight curve shape without Arithmetic OIS.}
-        \label{fig:metaoiscurve}
-        \end{figure}
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.7\textwidth]{images/aithmeticcurve.png}
-        \caption{The impact of including Arithmetic Fed Funds OIS in the curve calibration.}
-        \label{fig:arithmeticcurve}
-        \end{figure}
-        
-        \newpage
-        The Arithmetic basis swaps does not exist for tenor less than one year; in fact the impact on the curve is visible from one year after the settlement date and consists in a smoother shape.
-        
+\section{Conclusion}\label{section:3.4}  
         
 %%%CONCLUSION%%%
 
-\chapter*{Conclusion} \label{chap:Concl}
-\markboth{\MakeUppercase{Conclusion}}{}
-\addcontentsline{toc}{chapter}{Conclusion}
+%\chapter*{Conclusion} \label{chap:Concl}
+%\markboth{\MakeUppercase{Conclusion}}{}
+%\addcontentsline{toc}{chapter}{Conclusion}
 
 %%%APPENDICES%%%
 
