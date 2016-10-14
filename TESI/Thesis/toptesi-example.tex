@@ -509,109 +509,86 @@ To perform analysis a EUR market dataset as of January 29, 2016 (spot date Febru
 \end{figure}
 
     \section{Forward Stub} \label{section:3.1}
-    Starting from the first point, a particular overnight curve problem due to the manage of both spot starting instruments (like OIS) and forward start instruments (like ECB OIS) in the bootstrap algorithm will be presented. The problem occurs since spot starting OIS maturity dates, in most of the cases, does not coincide with the settlement date of the first ECB OIS and this leads to an overlapping instruments problem. Since the calibration algorithm must re-price perfectly all the included market quotes, the overlapping instruments force the calibrator to re-price both of them and, in order to respect this constrain, it will introduce wide oscillation in the curve shape. \\ 
-    To solve this problem different approach can be followed:
-    
+    The problem occurs since the EUR overnight curve is built using both spot starting OIS and forward starting OIS. Looking to the dataset presented in previous figure it is visible that the EURON curve calibration starts from spot starting OIS up to two months maturity and then give priority to ECB dates OIS that are preferred by traders because of their liquidity but they are forward start instruments. Obviously the concatenation between spot OIS and forward ECB OIS is not perfect (expect for rare lucky days) and this leads to an overlapping section problem as the one shown in figure \ref{fig:overlapping}. 
+    \begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/overlappingsol.png}
+    \caption{The overlapping solution scenario.}
+    \label{fig:overlapping}
+    \end{figure}
+    Since the calibration algorithm must re-price perfectly all the included market quotes, the overlapping instrument force the calibrator to re-price two times the section covered by two instruments and, in order to respect this constrain, it will introduce oscillation in the curve shape as shown in figure \ref{fig:includingcurve}.
+    \begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/includingcurve.png}
+    \caption{ON Curve excluding overlapping instrument.}
+    \label{fig:includingcurve}
+    \end{figure}
+    This scenario produces distortions due to the fact that the calibration will introduce strange oscillations in order to reprice the overlapping instrument. In fact, the Figure \ref{fig:includingcurve}, shows how the curve is pushed down till $-0.40\%$ and then turns back to the ECB OIS level. It is quite obvious that this strange curve's behaviour is not due to market quotes but to calibration's discrepancy resulting from the overlapping section. To solve this problem different approach can be followed:
      \begin{itemize}
-         \item{} A possibility is to include all spot starting OIS up to the first one overlapping with the first forward start ECB OIS (except for the lucky case in which a spot starting OIS maturity coincides with the ECB dates OIS settlement but this situation can only happens one day for each instrument). This solution's benefit is that the ON curve will be totally covered because the bootstrap algorithm can manage a sequence of maturities which permits a "pillar-to-pillar" standard bootstrap. Otherwise this choice implies that there will be a short time-frame presenting overlapping instruments as visible in Figure \ref{fig:overlapping}. \\
-         
+         \item{} A possibility is to include all spot starting OIS up to the first one overlapping with the first forward start ECB OIS (except for the lucky case in which a spot starting OIS maturity coincides with the ECB dates OIS settlement but this situation can only happens one day for each instrument). This solution's benefit is that the ON curve will be totally covered because the bootstrap algorithm can manage a sequence of maturities which permits a "pillar-to-pillar" standard bootstrap. Otherwise this choice implies that there will be a short time-frame presenting overlapping instruments visible in previous examples which shows that OIS with 2-month maturity ({\it 4 April 2016}) overlaps the first ECB OIS with settlement ({\it 16 March 2016}). The overlap section cause oscillations in the curve's shape and, as a consequence, an impact on not included instruments repricing errors. This errors are also deeply connected to the first section curve's shape; in fact this solution may leads to negligible repricing errors only if spot starting OIS and first ECB OIS presents close values (which means that the first curve section tends to be flat). Otherwise, empirical evidence shows that, sometimes, market idiosyncrasies can affect first section curve's shape making it highly downward/upward sloping (as the Figure \ref{fig:overlapping} suggest). In this particular cases also the overlapping solution fails leading to relevant errors.
+        \item{} Another possible solution may be to exclude from the bootstrap the overlapping OIS (the 2-month maturity one in reference to the preceding example). The benefit of this choice is to avoid overlapping instruments but implies that there will be a not covered curve section, as visible in Figure \ref{fig:exclude}, in which the bootstrap algorithm does not have any information related to the curve shape. The impact of this solution on repricing errors is very bad and so it is not advisable to use it.
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.8\textwidth]{images/overlappingsol.png}
-        \caption{The overlapping solution using 2 February 2016 values.}
-        \label{fig:overlapping}
-        \end{figure}
-        
-        The example shows that OIS with 2-month maturity ({\it 4 April 2016}) overlaps the first ECB OIS with settlement ({\it 16 March 2016}). This 18 days year fraction cause oscillations in the curve's shape and, as a consequence, an impact on not included instruments repricing errors. This errors are also deeply connected to the first section curve's shape; in fact this solution may leads to negligible repricing errors only if spot starting OIS and first ECB OIS presents close values (which means that the first curve section tends to be flat). Otherwise, empirical evidence shows that, sometimes, market idiosyncrasies can affect first section curve's shape making it highly downward/upward sloping (as the Figure \ref{fig:overlapping} suggest). In this particular cases also the overlapping solution fails leading to relevant errors \ref{subsection:3.1.2}.
-        
-        \item{} Another possible solution may be to exclude from the bootstrap the overlapping OIS (the 2-month maturity one in reference to the preceding example). The benefit of this choice is to avoid overlapping instruments but implies that there will be a not covered curve section, as visible in Figure \ref{fig:exclude}, in which the bootstrap algorithm does not have any information related to the curve shape. The impact of this solution on repricing errors is very bad and so it is not advisable to use it. \\
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.8\textwidth]{images/excludingsol.png}
-        \caption{The excluding solution using 2 February 2016 values.}
+        \includegraphics[width=0.7\textwidth]{images/excludingsol.png}
+        \caption{The excluding solution scenario.}
         \label{fig:exclude}
         \end{figure}
-        
-        This answers are not satisfactory and seems that there is no solution taking advantage of the only market instruments. This work's suggestion is to create a forward "Meta-Instrument", from now called {\it Stub}, which value can be derived from available market quotes.
-        \end{itemize}
-        
-        \newpage
-        \subsection{Implied value calculation} \label{subsection:3.1.1}
-        Let's suppose now to be in the situation described in Figure \ref{fig:exclude} in which there is a not covered curve's section. The Stub quote represents a forward rate which starts from the last not-overlapping instrument's (the OIS1M) maturity date and ends in the first ECB Dated settlement date.\\
-        
+        The impact on the shape is shown in figure \ref{fig:excludingcurve} and is visible how the calibrator extrapolates backward from ECB Dated market quote the non-covered part of the curve leading to high distortions especially when preceding instrument and ECB OIS quotes are distant. 
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.8\textwidth]{images/excludingsol2.png}
-        \label{fig:excluded2}
+        \includegraphics[width=0.7\textwidth]{images/excludingcurve.png}
+        \caption{ON Curve excluding overlapping instrument.}
+        \label{fig:excludingcurve}
         \end{figure}
-        The Stub forward rate is implied in the market and can be derived assuming a no-arbitrage condition. In order to not introduce arbitrages, it is necessary to obtain the Stub quote imposing that the excluded instrument must be repriced exactly (OIS2M in above Figure). In order to replicate the OIS2M value the following relationship must hold:
-        
-        $$e^{\int_{0}^{t\ped{1}} f_{inst}ds} \cdot e^{\int_{t\ped{1}}^{t\ped{2}} f_{inst}ds} \cdot e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds} = e^{\int_{0}^{t\ped{3}} f_{inst}ds}$$
-        where: 
-        $$t\ped{1} = \mbox{Last non-overlapping instrument's maturity in year fraction}$$
-        $$t\ped{2} = \mbox{First ECB Dated OIS settlement date  in year fraction}$$
-        $$t\ped{3} = \mbox{Overlapping instrument's maturity date in year fraction}$$
-        $$f_{inst} = \mbox{Instantaneous forward rate}$$
-        
+        This solutions are not satisfactory and seems that there is no solution taking advantage of the only market instruments. This work's suggestion is to create a forward "Meta-Instrument", from now called {\it Forward Stub}, which cover the missing section and which value can be derived from available market quotes.
+        \end{itemize}
+        Let's suppose now to be in the situation described in Figure \ref{fig:exclude} in which there is a not covered curve's section. The Stub quote represents the forward rate which starts from the last not-overlapping instrument's (the OIS1M) maturity date and ends in the first ECB dated settlement date.
         \begin{figure}[!h]
         \centering
         \includegraphics[width=0.8\textwidth]{images/stubsol.png}
-        \caption{The Stub solution using 2 February 2016 values.}
+        \caption{The Stub solution scenario.}
         \label{fig:stub}
         \end{figure}
-        As visible, no-arbitrage condition implies that investing in OIS1M ({\it first segment}), Stub ({\it second segment}) and in ECB OIS till the OIS2M maturity ({\it last segment}) must be equal to investing in OIS2M ({\it dotted segment}). In this situation, the Stub implied value can be calculated as:\\
+        The Stub forward rate is implied in the market and can be derived assuming a no-arbitrage condition and assuming that forward rates from $t\ped{2}$ and $t\ped{4}$ are constant, where:\\
+        \\
+        $t\ped{1} = \mbox{Last non-overlapping instrument's maturity}$ \\
+        $t\ped{2} = \mbox{First ECB dated OIS settlement date}$ \\
+        $t\ped{3} = \mbox{Overlapping instrument's maturity date}$ \\  
+        $t\ped{4} = \mbox{First ECB dated OIS maturity date}$ \\
+        $f(s) = \mbox{Instantaneous forward rate}$\\
+        \\
+        In our case:
+        \\
+        $t\ped{1} = \mbox{March 2, 2016}$ \\
+        $t\ped{2} = \mbox{March 16, 2016}$ \\
+        $t\ped{3} = \mbox{April 4, 2016}$ \\  
+        $t\ped{4} = \mbox{April 27, 2016}$ \\
+        \\
+        That is consistent with the empirical market evidence which shows flat forward rates between ECB monetary policy dates. In order to not introduce arbitrages, it is necessary to obtain the Stub quote imposing that the excluded instrument (OIS2M in the example) must be repriced perfectly. In order to replicate the OIS2M value the following relationship must hold:
         
-        $$ e^{\int_{t\ped{1}}^{t\ped{2}} f_{inst}ds} = \frac{e^{\int_{0}^{t\ped{3}} f_{inst}ds}}{e^{\int_{0}^{t\ped{1}} f_{inst}ds} \cdot e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds}} $$
+        $$\int_{0}^{t\ped{1}} f(s)ds \cdot \int_{t\ped{1}}^{t\ped{2}} f(s)ds \cdot \int_{t\ped{2}}^{t\ped{3}} f(s)ds = \int_{0}^{t\ped{3}} f(s)ds$$
+        As visible, no-arbitrage condition implies that investing in OIS1M ({\it first segment}), Forward Stub ({\it second segment}) and in ECB OIS till the OIS2M maturity ({\it last segment}) must be equal to investing in OIS2M ({\it dotted segment}). In this situation, the Stub implied value can be calculated as:\\
         
-        Assuming simple compounding:\\
+        $$ \int_{t\ped{1}}^{t\ped{2}} f(s)ds = \frac{\int_{0}^{t\ped{3}} f(s)ds}{\int_{0}^{t\ped{1}} f(s)ds \cdot \int_{t\ped{2}}^{t\ped{3}} f(s)ds}$$\\
+        Assuming continuous compounding:\\
         
-        $$ \mbox{{\it Stub}} = \frac{\left[\frac{(1+F(0,t\ped{3}) \cdot \tau(0,t\ped{3}))}{(1+F(0,t\ped{1}) \cdot \tau(0,t\ped{1})) \cdot (1+F(t\ped{2},t\ped{3}) \cdot \tau(t\ped{2},t\ped{3}))}-1\right]}{\tau(t\ped{1},t\ped{2})}$$\\
-        Calibrating the overnight curve using this forward Stub improve consistently the curve quality avoiding unwanted distortion and oscillation as it will be shown in next section. Otherwise, this solution can be implemented only if the bootstrap algorithm uses a log-linear interpolation for the short-term section of the curve. Interpolating log-linearly the overnight curve becomes piecewise constant and this assumption permits to derive the $e^{\int_{t\ped{2}}^{t\ped{3}} f_{inst}ds}$ value that must be equal to ECB OIS market quote. The good news is that, as it will be shown in the next section, the best practise to interpolate the ON curve is by means of a mixed interpolation, which interpolates log-linearly the short term section of the curve. \\
-        It is also important to underlying that the Stub algorithm produces good results also in limit cases as, for example, when $\tau(t\ped{1},t\ped{2}) \longrightarrow \frac{1}{365}$ that represents the particular case in which the Stub quote duration is just 1 day. Finally, during a year, there surely happen a particular scenario in which, since the first ECB OIS fixing becomes earlier and earlier, the discarded spot instruments is the first spot starting
-        OIS. This case implies that the so called "forward Stub" it is not forward start anymore because it becomes a spot instrument which covers the year fraction: $\tau(0,t\ped{1})$ (where $t\ped{1}$ is the first ECB OIS fixing date). In this case, the "spot stub" implied value is:\\
+        $$ \mbox{{\it Stub}} = \frac{\left[\frac{e^{F(0,t\ped{3}) \cdot \tau(0,t\ped{3})}}{e^{F(0,t\ped{1}) \cdot \tau(0,t\ped{1})} \cdot e^{F(t\ped{2},t\ped{3}) \cdot \tau(t\ped{2},t\ped{3})}}-1\right]}{\tau(t\ped{1},t\ped{2})}$$\\
+        Calibrating the overnight curve using this forward Stub improve consistently the curve quality avoiding unwanted distortion and oscillation as it will be shown in next section. Otherwise, this solution can be implemented only if the bootstrap algorithm uses a linear interpolation on log-discounts for the short-term section of the curve. Interpolating log-linearly the overnight curve becomes piecewise constant and this assumption permits to derive the $\int_{t\ped{2}}^{t\ped{3}} f(s)ds$ value that must be equal to ECB OIS market quote. The good news is that, as it will be shown in the next section, the best practise to interpolate the EURON curve is by means of a mixed interpolation, which interpolates log-linearly the short term section of the curve. \\
+        It is also important to underlying that the Stub algorithm produces good results also in limit cases as, for example, when $\tau(t\ped{1},t\ped{2}) \longrightarrow \frac{1}{365}$ that represents the particular case in which the Stub quote duration is just 1 day. 
         
-        $$ \mbox{{\it Stub}} = \frac{\left[\frac{1+F(0,t\ped{2}) \cdot \tau(0,t\ped{2})}{1+F(t\ped{1},t\ped{2}) \cdot \tau(t\ped{1},t\ped{2})}-1\right]}{\tau(t\ped{0},t\ped{1})}$$
+        Furthermore, during a year, there surely happen a particular scenario in which, since the first ECB OIS fixing becomes earlier and earlier, the discarded spot instruments is the spot week (SW) spot starting OIS. This case implies that the so called "Forward Stub" it is not forward start anymore because it becomes a spot instrument which covers the year fraction: $\tau(0,t\ped{1})$ (where $t\ped{1}$ is the first ECB OIS fixing date). In this case, the "spot stub" implied value is:
         
-        \subsection{Impact on Curve and Repricing Errors} \label{subsection:3.1.2}
-        In the previous section it has been presented a particular ON curve problem and 3 possible ways to solve it. Let's start from the worst one, namely the solution in which the overlapping instrument is excluded leaving a non-covered curve's section. With this approach the curve obtained is represented in the underlying figure:\\
-        
+        $$ \mbox{{\it Stub}} = \frac{\left[\frac{e^{F(0,t\ped{2}) \cdot \tau(0,t\ped{2})}}{e^{F(t\ped{1},t\ped{2}) \cdot \tau(t\ped{1},t\ped{2})}}-1\right]}{\tau(t\ped{0},t\ped{1})}$$\\
+        The impact on the curve's shape of the forward stub solution in presented in the following figure. It is visible that this approach avoid strange behaviour and 
+        is the one which minimize all the out-of-curve instruments repricing errors ensuring also the perfect reprice of the overlapping instruments excluded.
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.8\textwidth]{images/excludingcurve.png}
-        \caption{ON Curve excluding overlapping instrument (Evaluation date 2 February 2016).}
-        \label{fig:excludingcurve}
-        \end{figure}
-        
-        \newpage
-        This solution's big problem is that the bootstrap algorithm extrapolate backward from ECB Dated market quote the non-covered part of the curve leading to high distortions especially when preceding instrument and ECB OIS quotes are distant.\\
-        A better solution can be including all spot starting OIS even if one of them will certainly be overlapping. This approach is described in next figure:\\
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.8\textwidth]{images/includingcurve.png}
-        \caption{ON Curve including overlapping instrument (Evaluation date 2 February 2016).}
-        \label{fig:includingcurve}
-        \end{figure}
-        This option produces distortions due to the fact that the calibration will introduce strange oscillations in order to reprice the overlapping instrument. In fact, the Figure \ref{fig:includingcurve}, shows how the curve is pushed down till $-0.40\%$ and then turns back to the ECB OIS level. It is quite obvious that this strange curve's behaviour is not due to market quotes but to calibration's discrepancy resulting from the overlapping section. Finally, let's present the forward Stub solution:
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.75\textwidth]{images/stubcurve.png}
-        \caption{ON Curve including forward Stub (Evaluation date 2 February 2016).}
+        \includegraphics[width=0.7\textwidth]{images/stubcurve.png}
+        \caption{ON Curve including forward Stub.}
         \label{fig:stubcurve}
         \end{figure}
-        
-        \newpage
-        As visible, there are no wide oscillation in the curve's shape and the repricing errors analysis, represented in Figure \ref{fig:repricingimage} and \ref{fig:errors} , shows that this approach is the one which minimize all out-of-curve instruments, ensuring also the perfect reprice of the overlapping instrument excluded. Obviously, all the included instruments are always perfectly repriced.\\
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.65\textwidth]{images/repricingimage.png}
-        \caption{The minimization of all out-of-curve instruments repricing errors (in bps) using the Stub solution.}
-        \label{fig:repricingimage}
-        \end{figure}
-        
+       
+        Finally, the Figure \ref{fig:errors} shows the repricing error analysis that validates the forward stub solution as the one able to minimize errors and improve the curve quality. As visible the excluding solution is the worst one and it is also unable to reprice correctly the excluded instruments. The other solutions instead are able to reprice perfectly the 2-months maturity OIS which is included in the overlapping solution but not in the Stub. The Root Mean Square Error (RMSE) and the Max Error (ME) shows that the best approach to solve the problem is by means of the Forward Stub that presents the lower values of RMSE and ME.
         \begin{figure}[!h]
         \centering
         \includegraphics[width=0.8\textwidth]{images/errors.png}
@@ -619,60 +596,33 @@ To perform analysis a EUR market dataset as of January 29, 2016 (spot date Febru
         \label{fig:errors}
         \end{figure}
         
-    \newpage  
     \section{Mixed Interpolation}\label{section:3.2}
-        Moving to the next point, the {\itshape Mixed Interpolation} has already been introduced specifying that it merges two different kind of interpolation. Since the overnight curve time series shows a piecewise constant behaviour in the short term section, the best way to replicate the curve's shape is by means of a linear interpolation on discount factor which provides the stepped overnight curve shown in the next figure.
-        
-        \begin{figure}[!h]
-        \centering
-        \includegraphics[width=0.59\textwidth]{images/shortlinear.png}
-        \caption{Piecewise flat forward rates obtained through linear interpolation on log-discounts.}
-        \label{fig:shortlinear}
-        \end{figure}
-        
-       After the ECB dated OIS strip, however, assuming a piecewise constant curve is no more reasonable as there are no available information about the ECB monetary policy. For this reason, the flat interpolation on the mid/long term curve section leads to big inconsistency and so it becomes better to use an interpolation technique which produces smooth forward rates as the Hyman filtered monotonic cubic natural spline on log-discounts shown in the following figure. 
-       
-       \begin{figure}[!h]
-       \centering
-       \includegraphics[width=0.59\textwidth]{images/shorthyman.png}
-       \caption{Monotonic Cubic Natural Spline interpolation on log-discount factors.}
-       \label{fig:shorthyman}
-       \end{figure}
-       
-       Since using a log-linear or a monotonic cubic natural spline interpolation for the whole curve leads, in both cases, to distortions, this work suggest that the best way to model the overnight curve behaviour is to merge this two techniques leading to a mixed interpolator. The mixed interpolation is implemented in QuantLib 1.8 version in two different ways:
+        The {\itshape Mixed Interpolation}, as already introduced before,  is a particular technique which merges two different kind of interpolation. Since the overnight curve time series shows a piecewise constant behaviour in the short term section, the best way to replicate this kind of shape is by means of a constant interpolation on discount factor which provides a stepped overnight curve. Otherwise, assuming flat forward rates on the mid-long term section can not be good and it becomes necessary to switch to another interpolation technique which provides smooth forwards as the monotone cubic one does. The correct point where doing the interpolation change can not be established consistently but the suggestion is to use a flat interpolator up to the end of the ECB dated OIS strip and then switch to the cubic one. The mixed interpolation is implemented in QuantLib 1.8 version in two different ways:
         
         \begin{itemize}
             \item The {\itshape Split Range} approach consists in interpolate till a pre-determined pillar (from now called the {\itshape Switch Pillar}) using an interpolation technique and then interpolate the rest of the curve using the other technique.
             \item {\itshape Share Range} approach it is a bit more sophisticated and consists in interpolate two times the whole curve; the first time using a flat interpolation and the second time using the cubic one and then merge the obtained curves in the pre-determined switch pillar. 
         \end{itemize}
         
-        \begin{figure}
+        \begin{figure}[!h]
         \centering
-        \begin{subfigure}[b]{0.62\textwidth}
-        \includegraphics[width=\textwidth]{images/splitrange.png}
-        \label{splitrange}
-        \end{subfigure}
-        \begin{subfigure}[b]{0.62\textwidth}
-        \includegraphics[width=\textwidth]{images/sharerange.png}
-        \label{sharerange}
-        \end{subfigure}
-        \caption{Split Range and Share Range approach merging linear and monotonic cubic natural spline interpolation on log-discounts.}
-        \label{merge}
+        \includegraphics[width=0.7\textwidth]{images/splitrange.png}
+        \caption{Mixed Interpolation approach merging linear and monotonic cubic natural spline on log-discounts.}
+        \label{fig:mixedinterpolation}
         \end{figure}
     
-        As visible in the previous figures the two approaches produce an almost identical behaviour that makes it hard to understand which is the best.\\
-        Finally, the table below summarize the repricing error analysis results. \\
+        As visible in the previous figure this approach produces a stepped overnight till the switch pillar and then a smooth curve due to the monotone cubic interpolation. 
+        
+        Finally, the table below summarize the repricing error analysis results.
         
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.8\textwidth]{images/repricingmixed.png}
+        \includegraphics[width=0.9\textwidth]{images/repricingmixed.png}
         \caption{Repricing error analysis using a linear interpolation for the whole curve (first column), a monotonic cubic spline for the whole curve (second column), a share range mixed interpolation (third column) and a split range mixed interpolation (last column).}
         \label{fig:repricingmixed}
         \end{figure}
         
-        Analyzing the repricing table above it is possible to draw some conclusions. First of all, looking to the not included instruments, it is visible that the only approach that leads to higher errors is the Hyman Monotone Cubic one which fails to repricing correctly the 2-months maturity OIS (which is the instrument excluded in favor of the Stub). As already explained in the previous section the Stub implied quote is derived imposing a no-arbitrage condition and assuming a flat interpolation. Since the other approaches are interpolated linearly in that section they re-price that instrument perfectly but this is not the Cubic Spline case, which is not flat, and leads to a relevant error of 0.97. This result means that the Hyman Monotone Cubic approach does not permits the introduction of the forward stub and this can introduce high distortion in the calibration which are avoided using a piecewise constant interpolator (as the other apporaches). \\
-        Moving ahead, the other instruments are included in the calibration and they must be repriced perfectly. Otherwise, in order to test the calibration goodness on the mid/long tenor section, the bootstrap has been implemented excluding, one-by-one, the OIS5Y, OIS6Y, OIS10Y and the OIS11Y and then repricing them (the errors are outlined in red). Doing this, it is possible to understand how the different approaches are able to reprice instruments on the mid/long curve section. Analyzing the results, it is straightforward that the whole linear interpolated curve is not able to do a good reprice of this instruments especially in the mid section (5Y-6Y) where the sampled curve was very steep. \\
-        Summing up, the repricing analysis shows that doing a linear or a cubic interpolation for the whole curve leads to relevant distortion while the mixed interpolation approaches are able to merge the benefits of both allowing the forward Stub inclusion but also ensuring a very good reprice of all mid/long tenor OIS. Otherwise, the work can not outline which mixed approach (Split Range or Share Range) is the best one since they lead to almost identical results. 
+        Analyzing the repricing table above it is possible to draw some conclusions. First of all, looking to the not included instruments, it is visible that the only approach that leads to higher errors is the Hyman Monotone Cubic one which fails to reprice correctly the 2-months maturity OIS (which is the instrument excluded in favor of the Stub). As already explained in the previous section the Stub implied quote is derived imposing a no-arbitrage condition and assuming a flat interpolation. Since the other approaches are interpolated linearly they re-price that instrument perfectly but this is not the Cubic Spline case that, in fact, leads to a relevant error of 0.97 basis points. Since a log-linear interpolation for the whole curve leads to big flat section on the mid-long term and since the monotone cubic one avoids the introduction of the forward stub, this work suggest to use the mixed interpolation because it links the benefits of a flat interpolator in the short term and the benefits of the smooth interpolator on the mid-long term.
         
         \begin{figure}[!h]
         \centering
@@ -691,15 +641,6 @@ To perform analysis a EUR market dataset as of January 29, 2016 (spot date Febru
     \includegraphics[width=1.0\textwidth]{images/usddataset.png}
     \caption{The market dataset used to perform the USD market analysis.}
     \label{fig:usddataset}
-    \end{figure}
-    
-    As the EUR market case, to avoid over-fitting problems, the USD overnight curve calibration has been performed using only a wide subset of the instruments listed above which is summarized in the next figure.
-    
-    \begin{figure}[!h]
-    \centering
-    \includegraphics[width=1.0\textwidth]{images/usdoncurve.png}
-    \caption{All the instruments included in the USD overnight curve calibration.}
-    \label{fig:usdoncurve}
     \end{figure}
     
        \subsection{The EUR market case: Positive Jumps} \label{subsection:3.3.1}
@@ -798,7 +739,7 @@ This chapter faces 3 advanced overnight curve problems and presents some possibl
 
 Moving ahead to the next point, the mixed interpolation has been presented as a particular interpolator which merge two different techniques. In order to describe the overnight curve behaviour in the most accurate way, this work proposes to mix a linear interpolation on log-discounts for the short term curve's section with a monotone cubic natural spline for the mid-long term section. Using the same repricing approach proposed in the previous issue it has been shown that this configuration leads to a very good curve's fit which is better than the one obtained interpolating the whole curve with a log-linear interpolation or a monotone cubic natural spline interpolation. 
 
-Finally the jumps problem for the EUR market and the USD market has been shown. Following the best practice proposed by Ametrano-Mazzocchi (\cite{amemaz}) based on the  Burghardt approach (\cite{burgh}) this work proposed a simple way to estimate negative jumps as the ones visible in the Fed Fund time series.  
+Finally the jumps problem for the EUR market and the USD market has been shown. Following the best practice proposed by Ametrano-Mazzocchi (\cite{amemaz}) based on the  Burghardt approach (\cite{burgh}), this work proposed a simple way to estimate negative jumps as the ones visible in the Fed Fund time series.  
 
 %%%CONCLUSION%%%
 
