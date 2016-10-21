@@ -54,7 +54,7 @@
 
 \ateneo{Universit{\`a} degli Studi di Milano-Bicocca}
 \FacoltaDi{Statistica\\e Metodi Quantitativi per la finanza}
-\titolo{Improving Overnight Curve Calibration}
+\titolo{Advanced Overnight Curve Calibration}
 \corsodilaurea{Economia e Finanza}
 \candidato{\tabular{@{}l@{}}Nicholas \textsc{Bertocchi}\\matricola: 797940\endtabular}
 \relatore{prof.\ Ferdinando Ametrano}
@@ -97,7 +97,7 @@
 \chapter*{Introduction} \label{chap:Intro}
 \markboth{\MakeUppercase{Introduction}}{}
 \addcontentsline{toc}{chapter}{Introduction}
-Every work which seeks to speak about interest rates term structure cannot avoid to begin from 2007 liquidity and credit crisis. Before that harmful year every market participants considered the credit risk on short time frame, for example less then one year, irrelevant and this opinion was reflected by the market in infinitesimal basis spread between different tenor rates. In other words, all banks in the system consider almost the same lend money to other banks for a year, for a month or for a day. This context was possible because a big financial institution's default probability was seen as negligible but, otherwise, it wasn't, as the Lehman Brothers case teach to the world. The panic in the markets during summer 2007 drives first to a crisis of confidence between the so called "Too big to fail" \footnote{This title was created during subprime crisis to speak about financial institutions that, as the nickname suggest, are so big that their default might means the overall system collapse} that, unable to estimate other institutions creditworthiness, can't no more trust each other and this leads to a situation in which it was preferable to be paid with higher frequency in order to mitigate counterparts credit risk. The direct consequence was that Libor as well as Euribor rates with different tenors shown different portions of credit/liquidity spread which became higher as tenor increase. That was the end of the Single-Curve World. The basis explosion is shown in Figure \ref{fig:basisafter} and it is important to underlying that this effect was not due to a correlation break, as the Figure \ref{fig:correlationbreak} suggest. From that time every implied relationship between interest rates failed and it become necessary to calibrate, for each currency, multiple forwarding curve and particular relevance was given to the Overnight Curve which plays the role of forwarding curve for its specific tenor and the role of exogenous discounting curve for each tenor. This double function is due to the fact that all interest rate derivatives traded on regulated markets (like Futures) or collateralized with daily margining (like Forward Rate Agreements, Swaps and Basis Swaps) settle their positions on collateral accounts which earn the overnight rate and this is why the overnight curve usually plays the role of discounting curve as well as the role of forwarding curve.\\
+Every work which seeks to speak about interest rates term structure cannot avoid to begin from 2007 liquidity and credit crisis. Before that harmful year every market participants considered the credit risk on short time frame, for example less then one year, irrelevant and this opinion was reflected by the market in infinitesimal basis spread between different tenor rates. In other words, all financial institutions in the system consider almost the same lend money for a year, for a month or for a day. This context was possible because a big financial institution's default probability was seen as negligible but, otherwise, it wasn't, as the Lehman Brothers case teach to the world. The panic in the markets during summer 2007 drives first to a crisis of confidence between the so called "Too big to fail" \footnote{This title was created during subprime crisis to speak about financial institutions that, as the nickname suggest, are so big that their default might means the overall system collapse} that, unable to estimate other institutions creditworthiness, can't no more trust each other and this leads to a situation in which it was preferable to be paid with higher frequency in order to mitigate counterparts credit risk. The direct consequence was that Libor as well as Euribor rates with different tenors shown different portions of credit/liquidity spread which became higher as tenor increase. That was the end of the Single-Curve World. The basis explosion is shown in Figure \ref{fig:basisafter} and it is important to underlying that this effect was not due to a correlation break, as the Figure \ref{fig:correlationbreak} suggest. From that time every implied relationship between interest rates failed and it become necessary to calibrate, for each currency, multiple forwarding curve and particular relevance was given to the Overnight Curve which plays the role of forwarding curve for its specific tenor and the role of exogenous discounting curve for each tenor. This double function is due to the fact that all interest rate derivatives traded on regulated markets (like Futures) or collateralized with daily margining (like Forward Rate Agreements, Swaps and Basis Swaps) settle their positions on collateral accounts which earn the overnight rate and this is why the overnight curve usually plays the role of discounting curve as well as the role of forwarding curve.\\
 
 \begin{figure}[!h]
 \centering
@@ -125,16 +125,15 @@ After that, Chapter \ref{chap:2} will be focused on the overnight curve construc
 Finally, Chapter \ref{chap:3} represents the core of this work and analyze some peculiar overnight problems outlining different solutions in order to improve the curve quality. In particular this points will be stressed:
 
 \begin{description}
+    \item{-} Forward Stub inclusion to prevent overlapping instruments;
     \item{-} A Mixed Interpolation technique to respect empirical evidence;
-    \item{-} Forward Stub utilization to prevent overlapping instruments;
-    \item{-} Jumps and Turn of Year \textit{(TOY)} effect in foreign currencies curves (the USD problem will be presented);
-    \item{-} Fed Funds Arithmetic Average Coupon OIS introduction to Increase USD curve smoothness.
+    \item{-} Jumps and Turn of Year \textit{(TOY)} effect estimation for EUR and USD market cases.
 \end{description}
 
 %%%CHAPTER1%%%
 
 \chapter{Rate Curve Bootstrap} \label{chap:1}
-This first chapter wants to outline the most important issues concerning rate curves calibration in a general point of view. Every argument discussed here can be applied to all rate curves and is not specific of the Overnight case which, instead, will be discussed in the next chapter.
+This first chapter wants to outline the most important issues concerning rate curves calibration in a general point of view. Every argument discussed here can be applied to all rate curves and is not specific of the overnight case which, instead, will be discussed in the next chapter.
 
     \section{Parametrization} \label{section:1.1}
     Choosing the rate curve parametrization means decide how the curve must be described. There are three workable solution that can be adopted, namely:\\
@@ -166,18 +165,18 @@ This first chapter wants to outline the most important issues concerning rate cu
         $$F_{x}(t;s_{1},s_{2})=\frac{1}{\tau(s_{1},s_{2})}\left(\frac{P_{x}(t;s_{1})}{P_{x}(t;s_{2})}-1\right)$$\\
         
         In the old Single-Curve World this relationship was a result of a no-arbitrage condition which does not hold anymore but now, in a Multi-Curve System, this is merely the definition of a {\it pseudo-discount factors} function $P_{x}(t;s)$.\\
-        To clarify this concept let's make the following example. In the old Single-Curve world, before 2007 crisis, in the EUR market it was possible to could calculate the forward rate $F(t;t+3M,t+6M)$ starting from the values $P(t;t+3M)$ and $P(t;t+6M)$ deduced from Euribor $3M$ and Euribor $6M$ fixings with a no arbitrage condition; the resulting value was in line with the market quote of the $3X6$ FRA. With the large Basis Swap spreads presently quoted on the market this relation is no more valid: if we calculate the $3X6$ FRA implicit in Euribor 6M and Euribor 3M fixings (as explained above) we do not obtain the $3X6$ FRA quoted by the market (see Figure \ref{fig:basisafter}).
-        The discussion above has proved that for each forward curve $C_{x}$ exist three alternative descriptions :
+        To clarify this concept let's make the following example. In the old Single-Curve world, before 2007 crisis, in the EUR market it was possible to calculate the forward rate $F(t;t+3M,t+6M)$ starting from the values $P(t;t+3M)$ and $P(t;t+6M)$ deduced from Euribor $3M$ and Euribor $6M$ fixings with a no arbitrage condition; the resulting value was in line with the market quote of the $3X6$ FRA. With the large Basis Swap spreads presently quoted on the market this relation is no more valid; in fact, the $3X6$ FRA value implicit in Euribor 6M and Euribor 3M fixings is not equal to the $3X6$ FRA quoted by the market (see Figure \ref{fig:basisafter}).
+        The previous example proved that for each forward curve $C_{x}$ exist three alternative descriptions :
         
         $$C_{x}(t)=\{s\rightarrow P_{x}(t;s)|s\geq t\}$$
         $$C_{x}(t)=\{s\rightarrow z_{x}(t;s)|s> t\}$$
         $$C_{x}(t)=\{s\rightarrow f_{x}(t;s)|s> t\}$$
         
-        The advantage of the pseudo-discount factor description (compared to a direct forward rates description) is that, as already mentioned, they are well defined for $t=0$. On the other hand the drawbacks are obvious. First of all, it implies to not model directly the market quantities. Secondly the function $P_{x}(t,s)$ has an arbitrary part of length $x$ that must be chosen. When $x=ON$ this arbitrary part is really small (few days) and it can be fixed with some market quotes. So in this case we can use the pseudo-discount factors description without problems at all and is also consistent with the role of $C_{ON}$ as discount curve of the framework (in this case pseudo-discount factors are real discount factors!). For the other tenors it is necessary to introduce synthetic deposits in order to manage this arbitrariness. However, the description of synthetic deposits is outside this work's objectives.
+        The advantage of the pseudo-discount factor description (compared to a direct forward rates description) is that, as already mentioned, they are well defined for $t=0$. On the other hand the drawbacks are obvious. First of all, it implies to not model directly the market quantities. Secondly the function $P_{x}(t,s)$ has an arbitrary part of length $x$ that must be chosen. When $x=ON$ this arbitrary part is really small (few days) and it can be fixed with some market quotes. So in this case the pseudo-discount factors description can be used without problems at all and it is also consistent with the role of $C_{ON}$ as exogenous discounting for allk curves (in this case pseudo-discount factors are real discount factors!). For the other tenors it is necessary to introduce synthetic deposits in order to manage this arbitrariness (See \cite{amemaz}). However, the description of synthetic deposits is outside this work's objectives.
         
     \section{Calibration Algorithms} \label{section:1.2}
-    Pricing of all interest rate derivatives requires modelling the future dynamics of the zero rates (or yield) curve term structure. A key point to understand is that finding the best way to build the rates term structure is crucial in order to obtain reasonable prices, since an incorrect one will fail to produce them. The aim to which we have to be targeted on when calibrating an yield curve is to minimize, or eliminated, repricing errors especially on the most liquid instruments that are the one preferred for calibration as it will be discussed in \ref{section:2.1}.
-    In order to fulfil our task of error minimization there are different ways that can be divided into 2 main classes that, as a common condition, both require a set of $N$ pre-selected market instruments:
+    Pricing of all interest rate derivatives requires modelling the future dynamics of the zero rates (or yield) curve term structure. A key point to understand is that finding the best way to build the rates term structure is crucial in order to obtain reasonable prices, since an incorrect one will fail to produce them. So, the aim of a good curve calibration has to be targeted on minimizing, or even eliminating, repricing errors especially on the most liquid instruments that are the one preferred for calibration as it will be discussed in \ref{section:2.1}.
+    In order to fulfil our task of error minimization there are different bootstrap approach that can be divided into two main classes:
     \begin{itemize}
         \item Best-Fit Algorithm
         \item Exact-Fit Algorithm
@@ -188,8 +187,7 @@ This first chapter wants to outline the most important issues concerning rate cu
         
         \subsection{Exact-Fit Algorithm} \label{subsection:1.2.2}
         {\it Exact-fit algorithms}, instead, fix the yield curve on a time grid of $N$ points (or {\it pillars}) in order to exactly reprice the selected instruments. To do that, An interpolation method is required to determine curve values between pillars. Usually the algorithm is incremental, building the curve step-by-step with the increasing maturity of the ordered instruments ({\it bootstrap} approach).\\
-        The set of bootstrapping instruments defines the time grid used for bootstrapping: each pillar is the maturity date or the last relevant date of the corresponding instrument.
-        The interpolation method is strictly connected to the bootstrap and plays a fundamental role also during bootstrapping and not just after that. The "pillar-to-pillar" calibration proceeds with incomplete information; so, in order to determine each pillar value, the already bootstrapped part of the curve has to be used and, in particular, both pillar and intermediate interpolated values. This is the reason why we need to interpolate during the bootstrap algorithm and it also explain why this process is iterative. In fact, if the algorithm determines next pillar value taking advantage of the pre-bootstrapped part of the curve, it is straightforward that this value is influenced by it. Since including a pillar means add new information concerning the curve dynamic, if a {\it global interpolation scheme} is used, this tends to alter the first curve part shape (as it will be discussed in \ref{subsection:1.3.1}). This is usually remedied by cycling in iterative fashion: after a first bootstrap the resulting complete grid is altered one pillar at time using again the same bootstrapping algorithm, until convergence is reached (see \cite{haganwest} for a practical example of this interaction between interpolation and bootstrap).\\
+        The set of bootstrapping instruments defines the time grid used for bootstrapping: each pillar is the maturity date or the last relevant date of the corresponding instrument. The interpolation method is strictly connected to the bootstrap and plays a fundamental role also during bootstrapping and not just after that. The "pillar-to-pillar" calibration proceeds with incomplete information; so, in order to determine each pillar value, the already bootstrapped part of the curve has to be used and, in particular, both pillar and intermediate interpolated values. This is the reason why it is necessary to interpolate during the bootstrap algorithm and it also explain why this process is iterative. In fact, if the algorithm determines next pillar value taking advantage of the pre-bootstrapped part of the curve, it is straightforward that this value is influenced by it. Since including a pillar means add new information concerning the curve dynamic, if a {\it global interpolation scheme} is used, this tends to alter the first curve part shape (as it will be discussed in \ref{subsection:1.3.1}). This is usually remedied by cycling in iterative fashion: after a first bootstrap the resulting complete grid is altered one pillar at time using again the same bootstrapping algorithm, until convergence is reached (see \cite{haganwest} for a practical example of this interaction between interpolation and bootstrap).\\
         Clearly, this kind of algorithms are more accurate; henceforward the analysis will be restricted to the exact curve calibration problem.
    
     \section{Interpolation Techniques} \label{section:1.3}
@@ -206,7 +204,6 @@ This first chapter wants to outline the most important issues concerning rate cu
          \item Instantaneous forward rates.
      \end{itemize}
    In particular discount factors have exponential decay and this characteristic can leads to excess of convexity; so it makes sense to interpolate on log-discounts to ensure a smoother decay. Before analyzing the different impact of different choices on curve smoothness it is necessary to introduce the interpolation scheme concept. 
-        
         \subsection{Local scheme Vs. Global scheme} \label{subsection:1.3.1}
         All interpolation techniques can be grouped together into two different classes:\\
         \begin{itemize}
@@ -227,7 +224,7 @@ This first chapter wants to outline the most important issues concerning rate cu
         \item the quality of the forward rates: in this case the output curve is an "accounting" tool that wants to produce smooth forward rates; 
         \item the quality of the implied hedging strategies: in this case the output curve is a "risk management" tool that tries to produce reasonable and stable implied hedging quantities.
         \end{itemize}
-        Sometimes an interpolation method is good to build forward rates but not good from an hedging point of view (This is the case of cubic spline). Since the implementation of hedging curve is not a target of this thesis, the analysis will be restricted on building high quality forward rates and so the best interpolation technique will be the one which is able to produce the best forward rates in terms of smoothness. The most popular interpolation techniques are:
+        Sometimes an interpolation method is good to build forward rates but not good from an hedging point of view (this is the case of cubic spline). Since the implementation of hedging curve is not a target of this thesis, the analysis will be restricted on building high quality forward rates and so the best interpolation technique will be the one which is able to produce the best forward rates in terms of smoothness. The most popular interpolation techniques are:
         
         \begin{description}
             \item{-} Linear interpolation on zero rates or discount factors;
@@ -280,7 +277,7 @@ This first chapter wants to outline the most important issues concerning rate cu
         \end{figure}
         
         \newpage
-        The result is not better than the one obtained with the linear interpolation on zero rates. Nevertheless this method is more popular because it can be used to describe the first section of overnight-related curves; In fact, market evidence shows that short rates tend to be constant (flat) between particular dates, namely the ones in which there is a European Central Bank monetary policy board meeting. Therefore, the overnight curve is a particular case in which smoothness is a requirement not strictly recommended before the last ECB meeting date published (usually maximum 1 year and a half forward) but returns to be important after it. In this situation using a piecewise flat interpolation or a cubic one for the whole curve might be not accurate in both cases and so a merger of both interpolation techniques is needed which leads to the so called: "Mixed interpolation" that will be treated in \ref{subsection:3.1.4}. \\
+        The result is not better than the one obtained with the linear interpolation on zero rates. Nevertheless this method is more popular because it can be used to describe the first section of overnight-related curves; In fact, market evidence shows that short rates tend to be constant (flat) between particular dates, namely the ones in which there is a European Central Bank monetary policy board meeting. Therefore, the overnight curve is a particular case in which smoothness is a requirement not strictly recommended before the last ECB meeting date published (usually maximum 1 year and a half forward) but returns to be important after it. In this situation using a piecewise flat interpolation or a cubic one for the whole curve might be not accurate in both cases and so a merger of both interpolation techniques is needed which leads to the so called: "Mixed interpolation" that will be treated in \ref{section:3.1}. \\
         
         \subsection{Natural and Constrained Cubic Spline interpolation} \label{subsection:1.3.4}
         Traditional cubic spline interpolation methods describe the unknown function $f$ as a collection of $N-1$ spline functions $f_{i}$ ($i=1,...,N-1$), each one defined on the interval $[t_{i},t_{i+1}]$ through the following criteria:
@@ -298,7 +295,7 @@ This first chapter wants to outline the most important issues concerning rate cu
         $$f^{\prime\prime}_{i}(t_{i+1})=f^{\prime\prime}_{i+1}(t_{i+1})$$
         for $i=1,...,N-2$
         \end{itemize}
-        The first equation give us $4N-4$ unknown parameters; the other equations give us $2(N-1)+(N-2)+(N-2)=4N-6$ equations. The two remaining equations are based on a border conditions for the starting and ending points. If we choose the following conditions:
+        The first equation give us $4N-4$ unknown parameters; the other equations give us $2(N-1)+(N-2)+(N-2)=4N-6$ equations. The two remaining equations are based on a border conditions for the starting and ending points. If the following conditions is chosen:
         $$f^{\prime\prime}_{1}(t_{1})=f^{\prime\prime}_{N-1}(t_{N})=0$$
         the resulting spline is called {\it Natural Spline}. These interpolation methods suffer of well-documented problems, such as spurious inflection points, excessive convexity, lack of locality and wide oscillations (the spline only alleviates the problem of oscillation seen when fitting a single polynomial). \\
         The Kruger's method (see \cite{kruger}), which combines the smooth curve characteristics of spline interpolation with non-overshooting behaviour of linear interpolation, is now presented. A Constrained Cubic Spline is constructed using previous equations and replacing the second order derivative at every point with:
@@ -364,11 +361,11 @@ This chapter wants to focus on overnight curve construction passing through ever
 
     \section{Instrument selection criteria} \label{section:2.1}
     Before 2007, in the Single-Curve World, fixed income pricing requires to model just one curve named the Standard Curve. This particular curve was calibrated selecting among a wide range of instruments with different tenors. Market instruments were more than needed and this permits to calibrate a curve with a high pillar density in which the only problem was to choose the best set of instruments following a liquidity criteria. \\
-    The liquidity criteria implies that the major selection priority is given to the most liquid instruments available on the market. This principle is followed because instrument's liquidity is due to the trade volume. The more an instrument is traded and the more his value tends to be fair because of market efficiency. The bootstrap algorithm must be fed only with fair quotes, which vehicle the most efficient information, in order to calibrate a fair curve. It is strictly not recommended to bootstrap illiquid quotes in order to bootstrap market efficient information instead of market noise. \\
+    The liquidity criteria implies that the major selection priority is given to the most liquid instruments available on the market. This principle is followed because instrument's liquidity is due to the trade volume. The more an instrument is traded and the more his value tends to be fair because of market efficiency. The bootstrap algorithm must be fed only with fair quotes, which vehicle the most efficient information, in order to calibrate a fair curve. It is strictly not recommended to calibrate illiquid quotes in order to avoid the possibility to introduce market noise instead of market efficient information.\\
     Since the beginning of the Multi-Curve World, the curve selection criteria become more difficult due to the fact that every curve has to be built using his specific tenor instruments. In addiction many interest rate derivatives have become illiquid and the wide range of market quotes has decreased dramatically. The present multi-curves have a far less pillar density compared to the old standard one (this is the reason why synthetic deposits are necessary) and this limits the outcome quality. Fortunately, in the overnight case, there are many liquid instruments that can be used to cover all the curve behaviour, from the short term to the last section (usually from spot date to 60 years). In particular overnight curve is bootstrapped using the following instruments:
     
     \begin{itemize}
-    \item ON and TN Deposits in order to set the curve reference date to today's date (these instruments are not properly based on Eonia - the underlying index is the one-day tenor Euribor - thus we are introducing a very small inconsistency);
+    \item ON and TN Deposits in order to set the curve reference date to today's date (these instruments are not properly based on Eonia - the underlying index is the one-day tenor Euribor - this is a very small inconsistency);
     \item all the available forward starting OIS on ECB dates;
     \item spot starting OIS up to 60Y.
     \end{itemize}
@@ -476,8 +473,7 @@ This chapter wants to focus on overnight curve construction passing through ever
     \item \textit{Long Dated Region}: in this section the curve show the typical smooth behavior and so, the standard bootstrapping process can be used.
     \end{itemize}
     
-    This particular overnight behaviour (piece-wise constant in short region and smooth in long region) can be fixed using two different kinds of interpolations: linear on log discount and monotonic cubic natural spline on log discount \footnote{the characteristic of this mixed interpolation will be treated in \ref{section:3.2}.}. The linear one is typically used for pricing purpose in the short term section of the curve (for example to obtain the quotation of $OIS$ up to 1-2 years) and the cubic one for discounting or long term pricing. \\
-    Figure 
+    This particular overnight behaviour (piece-wise constant in short region and smooth in long region) can be fixed using two different kinds of interpolations: linear on log discount and monotonic cubic natural spline on log discount\footnote{the characteristic of this mixed interpolation will be treated in \ref{section:3.1}.}. The linear one is typically used for pricing purpose in the short term section of the curve (for example to obtain the quotation of $OIS$ up to 1-2 years) and the cubic one for discounting or long term pricing.\\
     
     \begin{figure}[!h]
     \centering
@@ -573,29 +569,36 @@ To perform analysis a EUR market dataset as of January 29, 2016 (spot date Febru
         Finally, the Figure \ref{fig:errors} shows the repricing error analysis that validates the forward stub solution as the one able to minimize errors and to improve the curve's quality. The other solution instead is able to reprice perfectly the 2-months maturity OIS because it is an included instrument but it is not able to minimize the out-of-curve quotes which show relevant repricing errors. Also the lower values of Root Mean Square Error (RMSE) and Max Error (ME) validate the Forward Stub solution as the one that ensures errors minimization.
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.75\textwidth]{images/errors.png}
+        \includegraphics[width=0.70\textwidth]{images/errors.png}
         \caption{Repricing errors summary for all possible solutions.}
         \label{fig:errors}
         \end{figure}
         
     \section{Mixed Interpolation}\label{section:3.2}
-        The {\itshape Mixed Interpolation}, as already introduced before,  is a particular technique which merges two different kind of interpolation. Since the overnight curve time series shows a piecewise constant behaviour in the short term section, the best way to replicate this kind of shape is by means of a constant interpolation on discount factor which provides a stepped curve. Otherwise, assuming flat forward rates on the mid-long term section can not be coherent and it becomes necessary to switch to another interpolation technique which provides smooth forwards as the monotone cubic one does. The correct point where doing the interpolation change can not be established consistently but the suggestion is to use a flat interpolator up to the end of the ECB dated OIS strip and then switch to the cubic one. The mixed interpolation is implemented in QuantLib 1.8 version in two different ways:
+        The {\itshape Mixed Interpolation}, as already introduced before,  is a particular technique which merges two different kind of interpolation. Figure\ref{fig:eoniafixings} shows that overnight curve time series have a piecewise constant behaviour between ECB monetary policy meeting; so, the best way to replicate this kind of shape is by means of a constant interpolation on discount factor which provides a stepped shape. Otherwise, assuming flat forward rates on the mid-long term section can not be coherent and it becomes necessary to switch to another interpolation technique which provides smooth forwards as the monotone cubic one does. The correct point where doing the interpolation change can not be established consistently but the suggestion is to use a flat interpolator up to the end of the ECB dated OIS strip and then switch to the cubic one. The mixed interpolation is implemented in QuantLib 1.8 version in two different ways:
         
         \begin{itemize}
             \item The {\itshape Split Range} approach consists in interpolate till a pre-determined pillar (from now called the {\itshape Switch Pillar}) using an interpolation technique and then interpolate the rest of the curve using the other technique.
             \item {\itshape Share Range} approach it is a bit more sophisticated and consists in interpolate two times the whole curve; the first time using a flat interpolation and the second time using the cubic one and then merge the obtained curves in the pre-determined switch pillar. 
         \end{itemize}
-        
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.7\textwidth]{images/splitrange.png}
+        \includegraphics[width=0.8\textwidth]{images/eoniafixings.png}
+        \caption{Last year Eonia fixings showing a piecewise flat behaviour between ECB monetary policy meetings; it should be noted that {\it 3-Dec-15} and {\it 10-Mar-16} was ECB dates.}
+        \label{fig:eoniafixings}
+        \end{figure}
+    
+        \begin{figure}[!h]
+        \centering
+        \includegraphics[width=0.8\textwidth]{images/splitrange.png}
         \caption{Mixed Interpolation approach merging linear and monotonic cubic natural spline on log-discounts.}
         \label{fig:mixedinterpolation}
         \end{figure}
+        \newpage
         As visible in the previous figure this approach produces a stepped behaviour till the switch pillar and then forward rates become smooth due to the monotone cubic interpolation. The  Figure \ref{fig:repricingmixed} summarize the repricing error analysis which aims to demonstrate that the mixed interpolator is the best interpolation technique for the overnight curve.
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.82\textwidth]{images/repricingmixed.png}
+        \includegraphics[width=0.78\textwidth]{images/repricingmixed.png}
         \caption{Repricing error analysis using a log-linear interpolation + Stub for the whole curve ($1^{st}$ column), a monotone cubic spline + Stub for the whole curve ($2^{nd}$ column), a share range mixed interpolation ($3^{rd}$ column) and a split range mixed interpolation ($4^{th}$ column).}
         \label{fig:repricingmixed}
         \end{figure}
@@ -611,12 +614,12 @@ To perform analysis a EUR market dataset as of January 29, 2016 (spot date Febru
     \label{fig:usddataset}
     \end{figure}
     
-    A rate jump can be seen, in a financial point of view, as a higher index fixing due to increased search of liquidity of market participants caused by end-of-month or end-of-year capital requirements. This definition is good for the EUR case in which market evidence shows positive jumps as visible in the Figure \ref{fig:turnofyear}.
+    A rate jump can be seen, in a financial point of view, as a higher index fixing due to increased search of liquidity of market participants caused by end-of-month or end-of-year capital requirements. This definition is good for the EUR case in which market evidence shows positive jumps as visible in the Figure \ref{fig:eoniatoy}.
     \begin{figure}[!h]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/turnofyear.png}
-    \caption{December 2014 turn of year effect shown on Bloomberg terminal.}
-    \label{fig:turnofyear}
+    \includegraphics[width=0.7\textwidth]{images/eoniatoy.png}
+    \caption{December 2014 Eonia turn of year effect.}
+    \label{fig:eoniatoy}
     \end{figure}
     However, this definition is not consistent for the U.S. case in which market evidence shows negative jumps; so American market participants tend to have a decreasing necessity of liquidity every end-of-month. The most relevant rate jump is the so called {\it Turn-Of-Year} (TOY) effect observable in the last working day in market quotations spanning across the end of the year. Other Euribor indexes with longer tenor display smaller jumps when their maturity crosses the same border; in fact jumps amplitude decrease as the rate tenor increase. \\
     To estimate jumps sizes Ametrano and Mazzocchi (\cite{amemaz}) propose a four-step approach similar to the one used by Burghardt (\cite{burgh}):
@@ -631,43 +634,43 @@ To perform analysis a EUR market dataset as of January 29, 2016 (spot date Febru
     Figures \ref{fig:firstjumpeur1} and \ref{fig:firstjumpeur3} shows the impact of first and second jump inclusion in the curves shape. As visible, the short term section of the curve is changed due the fact that jumps have been accounted. To preserve the value of the instantaneous forward rate integral in that section, the calibration algorithm pushes down all the segment changing the curve shape.
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.8\textwidth]{images/firstjumpeur1.png}
+        \includegraphics[width=0.70\textwidth]{images/firstjumpeur1.png}
         \caption{First two year section of the EUR overnight curve without jumps.}
         \label{fig:firstjumpeur1}
         \end{figure}
         
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.8\textwidth]{images/firstjumpeur3.png}
-        \caption{The same curve in Figure \ref{fig:firstjumpeur1} including first and second jump.}
+        \includegraphics[width=0.70\textwidth]{images/firstjumpeur3.png}
+        \caption{The same curve in Figure \ref{fig:firstjumpeur1} including first jump and TOY effect.}
         \label{fig:firstjumpeur3}
         \end{figure}
     Moving to the USD market case, the situation looks inverted. In fact, as visible in Figure \ref{fig:fftimeseries}, the Fed Funds fixings shows negative jumps every end-of-month and with a particular deep size. In a financial point of view this is due to the excess of liquidity that market participants hold and want to sell at the end of each month.
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.75\textwidth]{images/fftimeseries.png}
+        \includegraphics[width=0.70\textwidth]{images/fftimeseries.png}
         \caption{Last 2 years Fed Funds fixings time series.}
         \label{fig:fftimeseries}
         \end{figure}
     This behaviour tends to be constant during time, in fact, in the last two years, the Fed Funds time series shows negative jumps every end-of-month with no exceptions. To estimate this kind of jumps, however, the Ametrano-Mazzocchi approach for the EUR market case must be reviewed so that it can account negative sizes. In particular the formula at point 2 becomes:
         
         $$\left[F^{Interp}(t\ped{1},t\ped{2}) - F^{Original}(t\ped{1},t\ped{2})\right] \cdot \tau(t\ped{1},t\ped{2}) = J^{Size}*\tau^{J}$$\\
-        Applying the same procedure but using the reviewed formula it is now possible to make an estimation of the USD jumps and account them in the USD overnight curve as the next figures show.
+        Applying the same procedure but using the reviewed formula it is now possible to make an estimation of negative jumps and account them in the USD overnight curve as shown in Figure \ref{fig:firstjumpusd3}
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.75\textwidth]{images/firstjumpusd1.png}
+        \includegraphics[width=0.70\textwidth]{images/firstjumpusd1.png}
         \caption{First USD overnight curve section without jumps.}
         \label{fig:firstjumpusd1}
         \end{figure}
         \begin{figure}[!h]
         \centering
-        \includegraphics[width=0.75\textwidth]{images/firstjumpusd3.png}
+        \includegraphics[width=0.70\textwidth]{images/firstjumpusd3.png}
         \caption{The same curve in Figure \ref{fig:firstjumpusd1} including all estimated jumps.}
         \label{fig:firstjumpusd3}
         \end{figure}
-It is clear that, since the piecewise flat steps of the curve are given by market quotes which are the integral of instantaneous forward rates between an interval $(t\ped{1},t\ped{2})$, if this integral must account a deep below level point, the residual part is shifted up in order to maintain the integral value equal.
+        
+    Since the piecewise flat steps of the curve are given by market quotes which are the integral of instantaneous forward rates between an interval $(t\ped{1},t\ped{2})$, if this integral must account a deep below level point, the residual part is shifted up in order to maintain the integral value equal.
 
-\newpage       
 \section{Conclusions}\label{section:3.4}  
 This chapter faces 3 advanced overnight curve problems and presents some possible solutions. First of all, this work proposes to build a forward Stub in order to fix the overlapping instruments problem caused by the not perfect concatenation between spot starting OIS and ECB dated OIS. The results have been presented taking advantage of a repricing errors analysis which shows that excluding the overlapping instrument and including the forward Stub improve the curve's quality minimizing all the out-of-curve instruments errors.
 
