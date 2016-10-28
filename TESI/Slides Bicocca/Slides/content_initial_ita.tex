@@ -197,15 +197,15 @@ $$\mbox{{\it Forward Stub}} = \frac{\left[\frac{e^{F(0,t\ped{3}) \cdot \tau(0,t\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{tframe}{Jump estimation}
 \begin{itemize}
-\item Al fine di stimare la size, negativa o positiva, dei jump si propone un'approcio a 4 step simile a quello proposto da Burghardt (\cite{burg}):
+\item Al fine di stimare la size, negativa o positiva, dei jump si propone un'approcio a 4 step simile a quello proposto da Burghardt (\cite{burgh}):
+\end{itemize}
+\end{tframe}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tframe}{Jump estimation}
+\begin{itemize}
+\item Al fine di stimare la size, negativa o positiva, dei jump si propone un'approcio a 4 step simile a quello proposto da Burghardt (\cite{burgh}):
    \begin{enumerate}
    \item Costruire una curva overnight calibrando tutti gli strumenti liquidi disponibili e usando un'interpolazione flat sui forward rates
-   \item Stimare il primo jump assumendo che il segmento fuori linea risposto al precedente e successivo possa essere rimesso in linea scaricando la differenza nel jump; quindi se il jump è positivo:
-   $$\left[F^{Original}(t\ped{1},t\ped{2}) - F^{Interp}(t\ped{1},t\ped{2})\right] \cdot \tau(t\ped{1},t\ped{2}) = J^{Size}*\tau^{J}$$
-   se invece è negativo:
-   $$\left[F^{Interp}(t\ped{1},t\ped{2}) - F^{Original}(t\ped{1},t\ped{2})\right] \cdot \tau(t\ped{1},t\ped{2}) = J^{Size}*\tau^{J}$$
-   \item Eliminare dalla curva il jump trovato al punto precedente
-   \item Ripetere il punto 2 e 3 alla prossima data di jump
    \end{enumerate}
 \end{itemize}
 \end{tframe}
@@ -213,14 +213,10 @@ $$\mbox{{\it Forward Stub}} = \frac{\left[\frac{e^{F(0,t\ped{3}) \cdot \tau(0,t\
 \begin{tframe}{Jump estimation}
 \begin{itemize}
 \item Al fine di stimare la size, negativa o positiva, dei jump si propone un'approcio a 4 step simile a quello proposto da Burghardt (\cite{burgh}):
-\end{itemize}
-\end{tframe}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{tframe}{Jump estimation}
-\begin{itemize}
-\item Al fine di stimare la size, negativa o positiva, dei jump si propone un'approcio a 4 step simile a quello proposto da Burghardt (\cite{burgh}):
    \begin{enumerate}
    \item Costruire una curva overnight calibrando tutti gli strumenti liquidi disponibili e usando un'interpolazione flat sui forward rates
+   \item Stimare il primo jump assumendo che il segmento fuori linea risposto al precedente e successivo possa essere rimesso in linea scaricando la differenza nel jump; quindi se il jump è positivo:
+   $$\left[F^{Original}(t\ped{1},t\ped{2}) - F^{Interp}(t\ped{1},t\ped{2})\right] \cdot \tau(t\ped{1},t\ped{2}) = J^{Size}*\tau^{J}$$
    \end{enumerate}
 \end{itemize}
 \end{tframe}
